@@ -24,8 +24,66 @@ def add_slide(prs, layout, title):
             p.alignment = PP_ALIGN.LEFT
     return slide, shape
 
+def create_table2(slide, df_sheet, style, fontsize):
+
+    colname = list(df_sheet.columns)
+    colname = [i.replace(i[-2:],'') for i in colname] # replace ".1" to ""
+    df_sheet.columns = colname # rename the column to new one
+
+    print(df_sheet)
+    j = df_sheet.count() # series of column with the number of rows
+    colmax = j.idxmax() # value of the highest
+    print(colmax)
+
+    # conversion df to list
+    print("\ndf_sheet shape: " + str(df_sheet.shape))
+    for i, (columnName, columnData) in enumerate(df_sheet.iteritems()):
+        li_st = columnData.values.tolist() # convert column to columnlist
+        li_st.insert(0, colname[i]) # insert column name to columnlist
+        columnName
+    
+    
+    r = df_sheet.shape[0]
+    c = df_sheet.shape[1]
+
+    top = Inches(1.5)
+    left = Inches(0.3)
+    width = Inches(12.0)
+    height = Inches(0.8)
+
+    if style == 0: # horizontally
+        rows = c 
+        cols = r
+        table = slide.shapes.add_table(rows, cols, left, top, width, height).table
+        for r in range(rows):  # 3
+            icol = 0
+            while icol < cols:
+                table.cell(r, icol).text = li_st[icol]
+                icol += 1
+            print("row %d done" %r)
+    else:
+        rows = r
+        cols = c
+        max_row = 5
+        if rows < max_row:
+            diff = r - max_row # result would be negative to indicate rownum is fine
+            print("difference: row({0}) - maxrow({1}) = {2}".format(rows, max_row, diff))
+            print("Number of row is less than max row\nStatus: Okay")
+        else:
+            diff = r - max_row # result would be positive
+            print("difference: row({0}) - maxrow({1}) = {2}".format(rows, max_row, diff))
+            print("number of row is bigger than max row\nStatus: Not Okay")
+
+            
+
+
+
 
 def create_table(slide, data_list, style, fontsize):
+    # receives dataframe instead of list
+    # convert dataframe to list here
+
+
     r = 0
     for dt in data_list:
         if len(dt) > r:
@@ -51,12 +109,14 @@ def create_table(slide, data_list, style, fontsize):
         rows, cols = r, c
         max_row = 5
         if r < max_row:
-            diff =  c - r
-            print("difference: %d" %diff)
+            diff =  max_row - r
+            print("difference: maxrow({0}) - row({1}) = {2}".format(max_row, r, diff))
+            print("Number of row is less than max row = 5\nStatus: Okay")
             # if no extra row, normal
         elif r > max_row:
             diff = r - c
-            print("difference: %d" %diff)
+            print("difference: row({0}) - column({1}) = {2}".format(r, c, diff))
+            print("number of row is bigger than max row = 5\nStatus: Not Okay")
             # check the
             # if there are extra rows
             index = 0
@@ -64,10 +124,11 @@ def create_table(slide, data_list, style, fontsize):
             for dl in data_list:
                 if len(dl) > rowlengthmax:
                     rowlengthmax = len(dl)
-                    index = data_list.index(dl)
+                    index = data_list.index(dl) # wrong
             # now index contains the index value of the longest list
             # extra_list = []
 
+        # fill in the table with text data from the list
         table = slide.shapes.add_table(
             rows, cols+cols, left, top, width, height).table
         for r in range(cols):
