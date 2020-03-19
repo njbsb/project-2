@@ -13,7 +13,7 @@ df_ = df_.reset_index(drop=True)
 print(df_.shape)
 
 def colToExcel(col): # col is 1 based
-    excelCol = str()
+    excelCol = ''
     div = col 
     while div:
         (div, mod) = divmod(div-1, 26) # will return (x, 0 .. 25)
