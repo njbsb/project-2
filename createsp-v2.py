@@ -39,6 +39,8 @@ title_slide_layout = prs.slide_layouts[0]
 title_content_layout = prs.slide_layouts[1]
 sl_title, sh_title = add_slide(prs, title_slide_layout, "Title")
 
+##############################################################################################
+##############################################################################################
 new_dflist = []
 for i, df in enumerate(df_list):
     shname = sp_inputfile.sheet_names[i]
@@ -51,7 +53,7 @@ for i, df in enumerate(df_list):
     
     
     print(df)
-    print("Sheet/dataframe shape: " + str(df.shape)) # tuple of (rowlength, collength)
+    print("Sheet/dataframe shape: {}, rowcount: {}".format(str(df.shape), df.shape[0])) # tuple of (rowlength, collength)
     
     j = df.count()  # j is a series that contains length of each column
     seriessize = j.size  # size of series. eg: 3
@@ -145,6 +147,9 @@ for i, df in enumerate(df_list):
         pic = slide.shapes.add_picture('image.jpg', pptx.util.Inches(start), pptx.util.Inches(1), width = pptx.util.Inches(1), height = pptx.util.Inches(1))
         start += 1.0
     # create_table2(slide, df, 1, 10)
+
+#######################################################################################
+
 
 with pd.ExcelWriter('spexcel_output2.xlsx') as writer:  # pylint: disable=abstract-class-instantiated
     for n, df in enumerate(new_dflist):

@@ -22,46 +22,71 @@ def add_slide(prs, layout, title):
             text_frame.text = title
             # text_frame.vertical_anchor = MSO_ANCHOR.TOP
             p = text_frame.paragraphs[0]
-            p.alignment = PP_ALIGN.LEFT
+            p.aligment = PP_ALIGN.LEFT
     return slide, shape
+
+def reindex_column(df):
+    colname = list(df.columns)
+    colname = [i.replace(i, str(colname.index(i))) for i in colname]
+    # colname = [i.replace(i[-2:],'') for i in colname] # replace ".1" to ""
+    df.columns = colname
+    return df
+
+def normalize_df(df):
+    # for df with >5 row count
+    sheet_ = [] # final sheet
+    if(df.shape[0] > 5):
+        sheet = []
+        for column in df:
+            cc = df[column]
+            list_ = [column]
+            list_ += cc.values.tolist()
+            sheet.append(list_)
+        srs = df.count() # length equivalent to column count
+        srs.reset_index(drop=True)
+        idxmax = int(srs.idxmax())
+        maxrowc = srs[idxmax]
+        print("column with most row: line {}, index: {}, value: {}".format(idxmax+1, idxmax, maxrowc))
+        li_extend = sheet[idxmax]
+        li_slice1 = li_extend[:4]
+        li_slice2 = [str(idxmax)] + li_extend[4:]
+        if(idxmax == 0):
+            sheet = [li_slice1] + [li_slice2] + [sheet[1]] + [sheet[2]]
+        elif(idxmax == 1):
+            sheet = [sheet[0]] + [li_slice1] + [li_slice2] + [sheet[2]]
+        elif(idxmax == 2):
+            sheet = [sheet[0]] + [sheet[1]] + [li_slice1] + [li_slice2]
+        df_ = pd.DataFrame.from_records(sheet).transpose().dropna(how='all').fillna('')
+        for column in df_:
+            cc = df_[column]
+            li_ = cc.values.tolist()
+            sheet_.append(li_)
+            print(li_)
+            print('------------------')
+    else:
+        df_ = df.fillna('')
+        print(df_)
+        for column in df_:
+            cc = df_[column]
+            li_st = [column]
+            li_st += cc.values.tolist()
+            sheet_.append(li_st) # list of list of df
+            print(li_st)
+            print('------------------')
+    ###
+    return df_, sheet_
 
 def create_table2(slide, df_sheet, style, fontsize):
 
-    lst_colname = list(df_sheet.columns)
-    lst_colname = [i.replace(i, str(lst_colname.index(i))) for i in lst_colname]
-    df_sheet.columns = lst_colname
-
-    srs_rc = df_sheet.count()
-    srs_size = srs_rc.size
-    srs_rc.reset_index(drop=True)
-    srs_rc_indexmax = int(srs_rc.idxmax())
-
-    if(srs_rc[srs_rc_indexmax] > 5):
-        lst_dfcol = []
-        for i in range(srs_size):
-            df_col = df_sheet[str(i)]
-            lst_dfcol.append(df_col)
-        
-        col_maxrow = lst_dfcol[srs_rc_indexmax]
-        col_slice1 = col_maxrow[:3].dropna(how='all').reset_index(drop=True)
-        col_slice2 = col_maxrow[3:].dropna(how='all').reset_index(drop=True)
-
-        if(srs_rc_indexmax == 0):
-            df_sheet = pd.concat([col_slice1, col_slice2, lst_dfcol[1], lst_dfcol[2]])
-        elif(srs_rc_indexmax == 1):
-            df_sheet = pd.concat([lst_dfcol[0], col_slice1, col_slice2,  lst_dfcol[2]])
-        elif(srs_rc_indexmax == 2):
-            df_sheet = pd.concat([lst_dfcol[0], lst_dfcol[1], col_slice1, col_slice2])
-
-    df_sheet = df_sheet.dropna(how='all')
+    if(df_sheet.shape[0] > 5):
+        df_sheet = normalize_df(df_sheet)
     
     
-    for i, column in enumerate(df_sheet):
+    for column in df_sheet:
         colcontent = df_sheet[column] # content of the column
         li_st = [column] # column = name of column
         li_st = li_st + colcontent.values.tolist() # concat the name and the content
     
-
     # creation of table starts from here
 
     r = df_sheet.shape[0]
@@ -85,26 +110,11 @@ def create_table2(slide, df_sheet, style, fontsize):
     else: # vertically
         rows = r
         cols = c
-        max_row = 5
-        if rows < max_row:
-            diff = r - max_row # result would be negative to indicate rownum is fine
-            print("difference: row({0}) - maxrow({1}) = {2}".format(rows, max_row, diff))
-            print("Number of row is less than max row\nStatus: Okay")
-        else:
-            diff = r - max_row # result would be positive
-            print("difference: row({0}) - maxrow({1}) = {2}".format(rows, max_row, diff))
-            print("number of row is bigger than max row\nStatus: Not Okay")
-
-            
-
-
 
 
 def create_table(slide, data_list, style, fontsize):
     # receives dataframe instead of list
     # convert dataframe to list here
-
-
     r = 0
     for dt in data_list:
         if len(dt) > r:
@@ -112,7 +122,7 @@ def create_table(slide, data_list, style, fontsize):
     # rows = len(data_list[0])
     c = len(data_list)
     top = Inches(1.5)
-    left = Inches(0.3)
+    left = Inches(0.15)
     width = Inches(12.0)
     height = Inches(0.8)
 
@@ -125,33 +135,13 @@ def create_table(slide, data_list, style, fontsize):
                 table.cell(r, icol).text = data_list[r][icol]
                 icol += 1
             print("row %d done" %r)
-
     elif style == 1: # vertically, col by col, 1st line - 3rd line
         rows, cols = r, c
-        # max_row = 5
-        # if r < max_row:
-        #     diff =  max_row - r
-        #     print("difference: maxrow({0}) - row({1}) = {2}".format(max_row, r, diff))
-        #     print("Number of row is less than max row = 5\nStatus: Okay")
-        #     # if no extra row, normal
-        # elif r > max_row:
-        #     diff = r - c
-        #     print("difference: row({0}) - column({1}) = {2}".format(r, c, diff))
-        #     print("number of row is bigger than max row = 5\nStatus: Not Okay")
-        #     # check the
-        #     # if there are extra rows
-        #     index = 0
-        #     rowlengthmax = 0
-        #     for dl in data_list:
-        #         if len(dl) > rowlengthmax:
-        #             rowlengthmax = len(dl)
-        #             index = data_list.index(dl) # wrong
-        #     # now index contains the index value of the longest list
-        #     # extra_list = []
-
+        print("rows: {}, cols: {}".format(rows, cols))
         # fill in the table with text data from the list
         table = slide.shapes.add_table(
             rows, cols+cols, left, top, width, height).table
+        # fill cells with data from list
         for r in range(cols):
             irow = 0
             while irow < rows:
@@ -165,13 +155,10 @@ def create_table(slide, data_list, style, fontsize):
                 table.columns[t].width = Inches(1.0)
             else:
                 table.columns[t].width = Inches(2.2)
-
         # merge header cells
-        for i in range(3):
+        for i in range(len(data_list)):
             i = i*2
             table.cell(0,i).merge(table.cell(0,i+1))
-
-
     else:
         pass  # or fill in with other value
     resize_table_font(table, fontsize)
