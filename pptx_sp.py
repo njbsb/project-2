@@ -6,6 +6,12 @@ from pptx.dml.color import RGBColor
 import pandas as pd
 # from pptx.enum.dml import MSO_THEME_COLOR
 
+def write_excel(dflist, filename, sheetname):
+    with pd.ExcelWriter(filename) as writer: #pylint: disable=abstract-class-instantiated
+        for i, df in enumerate(dflist):
+            df.to_excel(writer, sheetname[i], index=False)
+        writer.save()
+
 def add_slide(prs, layout, title):
     prs.slide_width = 11887200
     prs.slide_height = 6686550
@@ -22,7 +28,7 @@ def add_slide(prs, layout, title):
             text_frame.text = title
             # text_frame.vertical_anchor = MSO_ANCHOR.TOP
             p = text_frame.paragraphs[0]
-            p.aligment = PP_ALIGN.LEFT
+            p.alignment = PP_ALIGN.LEFT
     return slide, shape
 
 def reindex_column(df):
@@ -61,56 +67,20 @@ def normalize_df(df):
             cc = df_[column]
             li_ = cc.values.tolist()
             sheet_.append(li_)
-            print(li_)
-            print('------------------')
+            # print(li_)
+            # print('------------------')
     else:
         df_ = df.fillna('')
-        print(df_)
+        # print(df_)
         for column in df_:
             cc = df_[column]
             li_st = [column]
             li_st += cc.values.tolist()
             sheet_.append(li_st) # list of list of df
-            print(li_st)
-            print('------------------')
+            # print(li_st)
+            # print('------------------')
     ###
     return df_, sheet_
-
-def create_table2(slide, df_sheet, style, fontsize):
-
-    if(df_sheet.shape[0] > 5):
-        df_sheet = normalize_df(df_sheet)
-    
-    
-    for column in df_sheet:
-        colcontent = df_sheet[column] # content of the column
-        li_st = [column] # column = name of column
-        li_st = li_st + colcontent.values.tolist() # concat the name and the content
-    
-    # creation of table starts from here
-
-    r = df_sheet.shape[0]
-    c = df_sheet.shape[1]
-    
-    top = Inches(1.5)
-    left = Inches(0.3)
-    width = Inches(12.0)
-    height = Inches(0.8)
-
-    if style == 0: # horizontally
-        rows = c 
-        cols = r
-        table = slide.shapes.add_table(rows, cols, left, top, width, height).table
-        for r in range(rows):  # 3
-            icol = 0
-            while icol < cols:
-                table.cell(r, icol).text = li_st[icol]
-                icol += 1
-            print("row %d done" %r)
-    else: # vertically
-        rows = r
-        cols = c
-
 
 def create_table(slide, data_list, style, fontsize):
     # receives dataframe instead of list
@@ -156,9 +126,86 @@ def create_table(slide, data_list, style, fontsize):
             else:
                 table.columns[t].width = Inches(2.2)
         # merge header cells
+        for i in range(rows):
+            for j in range(cols+cols):
+                a = table.cell(i,j)
+                a.fill.solid()
+                a.fill.fore_color.rgb = RGBColor(242,242,242)
         for i in range(len(data_list)):
             i = i*2
             table.cell(0,i).merge(table.cell(0,i+1))
+            table.cell(0,i).fill.solid()
+            # set foreground (fill) color to a specific RGB color
+            table.cell(0,i).fill.fore_color.rgb = RGBColor(0, 177, 169)
+
+
+    else:
+        pass  # or fill in with other value
+    resize_table_font(table, fontsize)
+
+def create_table_df(slide, data_list, style, fontsize):
+    # receives dataframe instead of list
+    # convert dataframe to list here
+    # sheet_ = []
+    # for column in df_:
+    #         cc = df_[column]
+    #         li_st = [column]
+    #         li_st += cc.values.tolist()
+    #         sheet_.append(li_st) # list of list of df
+    # data_list = sheet_
+    r = 0
+    for dt in data_list:
+        if len(dt) > r:
+            r = len(dt)
+    # rows = len(data_list[0])
+    c = len(data_list)
+    top = Inches(1.5)
+    left = Inches(0.15)
+    width = Inches(12.0)
+    height = Inches(0.8)
+    if style == 0: # horizontally
+        rows, cols = c, r
+        table = slide.shapes.add_table(rows, cols, left, top, width, height).table
+        for r in range(rows):  # 3
+            icol = 0
+            while icol < cols:
+                table.cell(r, icol).text = data_list[r][icol]
+                icol += 1
+            print("row %d done" %r)
+    elif style == 1: # vertically, col by col, 1st line - 3rd line
+        rows, cols = r, c
+        print("rows: {}, cols: {}".format(rows, cols))
+        # fill in the table with text data from the list
+        table = slide.shapes.add_table(
+            rows, cols+cols, left, top, width, height).table
+        # fill cells with data from list
+        for r in range(cols):
+            irow = 0
+            while irow < rows:
+                ico = r + (r+1)
+                table.cell(irow, ico).text = data_list[r][irow]
+                irow += 1
+            print("col %d done" %r)
+        # adjust column width
+        for t in range(len(table.columns)):
+            if t % 2 == 0:
+                table.columns[t].width = Inches(1.0)
+            else:
+                table.columns[t].width = Inches(2.2)
+        # merge header cells
+        for i in range(df_.shape[1]):
+            for j in range(df_.shape[0]):
+                a = table.cell(i,j)
+                a.fill.solid()
+                a.fill.fore_color.rgb = RGBColor(242,242,242)
+        for i in range(len(data_list)):
+            i = i*2
+            table.cell(0,i).merge(table.cell(0,i+1))
+            table.cell(0,i).fill.solid()
+            # set foreground (fill) color to a specific RGB color
+            table.cell(0,i).fill.fore_color.rgb = RGBColor(0, 177, 169)
+
+
     else:
         pass  # or fill in with other value
     resize_table_font(table, fontsize)
