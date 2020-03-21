@@ -42,16 +42,21 @@ def reindex_column(df):
     return df
 
 
-def normalize_df(df):
-    # for df with >5 row count
+def df_tolist(df):
+    sheet = []
+    for column in df:
+        # with header
+        cc = df[column]
+        list_ = [column]
+        list_ += cc.values.tolist()
+        sheet.append(list_)
+    return sheet
+
+
+def normalize_df(df, typ):
     sheet_ = []  # final sheet
     if(df.shape[0] > 5):
-        sheet = []
-        for column in df:
-            cc = df[column]
-            list_ = [column]
-            list_ += cc.values.tolist()
-            sheet.append(list_)
+        sheet = df_tolist(df)
         srs = df.count()  # length equivalent to column count
         srs.reset_index(drop=True)
         idxmax = int(srs.idxmax())
@@ -69,13 +74,24 @@ def normalize_df(df):
             sheet = [sheet[0]] + [sheet[1]] + [li_slice1] + [li_slice2]
         df_ = pd.DataFrame.from_records(
             sheet).transpose().dropna(how='all').fillna('')
-        for column in df_:
-            cc = df_[column]
-            li_ = cc.values.tolist()
-            sheet_.append(li_)
-            # print(li_)
-            # print('------------------')
-    else:
+
+        if (typ == 0):  # data
+            for column in df_:
+                cc = df_[column]
+                li_ = cc.values.tolist()
+                sheet_.append(li_)
+                # print(li_)
+                # print('------------------')
+        elif (typ == 1):  # id
+            ncol = list(df_.iloc[0])  # 0, 1, 2, 2
+            df_.columns = ncol
+            df_ = df_[1:]
+            for column in df_:
+                cc = df_[column]
+                li_ = [column]
+                li_ += cc.values.tolist()
+                sheet_.append(li_)  # list of list of df
+    else:  # if doesnt need to be normalized
         df_ = df.fillna('')
         # print(df_)
         for column in df_:
@@ -90,19 +106,15 @@ def normalize_df(df):
 
 
 def create_table(slide, data_list, style, fontsize):
-    # receives dataframe instead of list
-    # convert dataframe to list here
     r = 0
     for dt in data_list:
         if len(dt) > r:
             r = len(dt)
-    # rows = len(data_list[0])
     c = len(data_list)
     top = Inches(1.5)
     left = Inches(0.15)
     width = Inches(12.0)
     height = Inches(0.8)
-
     if style == 0:  # horizontally
         rows, cols = c, r
         table = slide.shapes.add_table(
@@ -142,10 +154,17 @@ def create_table(slide, data_list, style, fontsize):
         # merge header cells, fill header color
         for i in range(len(data_list)):
             i = i*2
-            table.cell(0, i).merge(table.cell(0, i+1))
-            table.cell(0, i).fill.solid()
-            table.cell(0, i).fill.fore_color.rgb = RGBColor(
+            a = table.cell(0, i)
+            a.merge(table.cell(0, i+1))
+            a.fill.solid()
+            a.fill.fore_color.rgb = RGBColor(
                 0, 177, 169)  # turquoise
+            if(a.text == '0'):
+                a.text = '1st Line'
+            elif(a.text == '1'):
+                a.text = '2nd Line'
+            elif(a.text == '2'):
+                a.text = '3rd Line'
     resize_table_font(table, fontsize)
 
 
