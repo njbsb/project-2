@@ -34,13 +34,23 @@ title_content_layout = prs.slide_layouts[1]
 sl_title, sh_title = ps.add_slide(prs, title_slide_layout, sptitle)
 
 for i, df in enumerate(df_list):
+    # reformat table
+    print("-----------------------------------------------------\n{}\nSheet/df shape: {}, rowcount: {}".format(
+        sheetname[i], str(df.shape), df.shape[0]))
+    df = ps.reindex_column(df)
+    df_list[i] = ps.reindex_column(df)
+    df_idlist[i] = ps.reindex_column(df_idlist[i])
+
+
+for i, df in enumerate(df_list):
+    # add table here and image here
     df = ps.reindex_column(df)
     print("-----------------------------------------------------\n{}\nSheet/df shape: {}, rowcount: {}".format(
         sheetname[i], str(df.shape), df.shape[0]))
-    sheet = []
     df, sheet = ps.normalize_df(df, 0)
     slide, shape = ps.add_slide(prs, title_content_layout, sheetname[i])
     ps.create_table(slide, sheet, 1, 10)
+    pic = shape.add_picture('image.jpg', Inches(1), Inches(1))
     df_list[i] = df  # replace df with normalized df
     dd = df_idlist[i]
     dd = ps.reindex_column(dd)

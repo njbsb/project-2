@@ -45,11 +45,12 @@ def reindex_column(df):
 def df_tolist(df):
     sheet = []
     for column in df:
-        # with header
         cc = df[column]
-        list_ = [column]
+        list_ = [column]  # with header
         list_ += cc.values.tolist()
         sheet.append(list_)
+        # print(li_st)
+        # print('------------------')
     return sheet
 
 
@@ -74,7 +75,6 @@ def normalize_df(df, typ):
             sheet = [sheet[0]] + [sheet[1]] + [li_slice1] + [li_slice2]
         df_ = pd.DataFrame.from_records(
             sheet).transpose().dropna(how='all').fillna('')
-
         if (typ == 0):  # data
             for column in df_:
                 cc = df_[column]
@@ -86,21 +86,10 @@ def normalize_df(df, typ):
             ncol = list(df_.iloc[0])  # 0, 1, 2, 2
             df_.columns = ncol
             df_ = df_[1:]
-            for column in df_:
-                cc = df_[column]
-                li_ = [column]
-                li_ += cc.values.tolist()
-                sheet_.append(li_)  # list of list of df
-    else:  # if doesnt need to be normalized
+            sheet_ = df_tolist(df_)
+    else:  # if df doesnt need to be normalized
         df_ = df.fillna('')
-        # print(df_)
-        for column in df_:
-            cc = df_[column]
-            li_st = [column]
-            li_st += cc.values.tolist()
-            sheet_.append(li_st)  # list of list of df
-            # print(li_st)
-            # print('------------------')
+        sheet_ = df_tolist(df_)
     ###
     return df_, sheet_
 
