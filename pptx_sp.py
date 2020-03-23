@@ -54,6 +54,15 @@ def df_tolist(df):
     return sheet
 
 
+def dfid_tolist(df):
+    sheet = []
+    for column in df:
+        cc = df[column]
+        li = cc.values.tolist()
+        sheet.append(li)
+    return sheet
+
+
 def normalize_df(df, typ):
     sheet_ = []  # final sheet
     if(df.shape[0] > 5):
@@ -83,13 +92,17 @@ def normalize_df(df, typ):
                 # print(li_)
                 # print('------------------')
         elif (typ == 1):  # id
-            ncol = list(df_.iloc[0])  # 0, 1, 2, 2
-            df_.columns = ncol
+            # ncol = list(df_.iloc[0])  # 0, 1, 2, 2
+            # df_.columns = ncol
             df_ = df_[1:]
-            sheet_ = df_tolist(df_)
+            sheet_ = dfid_tolist(df_)
     else:  # if df doesnt need to be normalized
-        df_ = df.fillna('')
-        sheet_ = df_tolist(df_)
+        if typ == 0:
+            df_ = df.fillna('')
+            sheet_ = df_tolist(df_)
+        else:
+            df_ = df.fillna('')
+            sheet_ = dfid_tolist(df_)
     ###
     return df_, sheet_
 
