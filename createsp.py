@@ -8,16 +8,15 @@ import os
 
 print("------------------------------------------------------------------ NEW COMMAND ------------------------------------------------------------------")
 pa = os.getcwd()
-# sppath = r'D:\Documents\Python\project-2\database\input\sp-ptc1-2020.xlsx'
 spinput = os.path.join(pa, "database/input/", "sp-ptc1-2020.xlsx")
-print(spinput)
 spfile = pd.ExcelFile(spinput)
 sptitle = Path(spinput).stem
 sheetname = spfile.sheet_names
-sheetcount = len(spfile.sheet_names)
+sheetcount = len(sheetname)
 print("Number of sheets: %d" % sheetcount)
 df_list = []
 df_idlist = []
+
 for s in range(sheetcount):
     df_ = pd.read_excel(spinput, sheet_name=s, skiprows=2,
                         usecols='F:K', nrows=None)
