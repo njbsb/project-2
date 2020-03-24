@@ -26,7 +26,8 @@ for s in range(sheetcount):
                           usecols='A:C', nrows=None)
     df_idlist.append(df_id)
 
-ps.write_excel(df_list, 'sp_output1.xlsx', sheetname)
+output1 = os.path.join(pa, "database/output/", 'sp_output1.xlsx')
+ps.write_excel(df_list, output1, sheetname)
 prs = Presentation()
 title_slide_layout = prs.slide_layouts[0]
 title_content_layout = prs.slide_layouts[1]
@@ -48,7 +49,10 @@ for i, df in enumerate(df_list):
     dd, sh = ps.normalize_df(dd, 1)
     ps.insert_image(pa, shape, sh)
 
-ps.write_excel(df_list, 'sp_output2.xlsx', sheetname)
-ps.write_excel(df_idlist, 'sp_output3.xlsx', sheetname)
+output2 = os.path.join(pa, "database/output/", 'sp_output2.xlsx')
+output3 = os.path.join(pa, "database/output/", 'sp_output3.xlsx')
+createsp = os.path.join(pa, "database/output/", "createsp.pptx")
+ps.write_excel(df_list, output2, sheetname)
+ps.write_excel(df_idlist, output3, sheetname)
 sl_end, sh_end = ps.add_slide(prs, title_slide_layout, "End")
-prs.save('createsp.pptx')
+prs.save(createsp)
