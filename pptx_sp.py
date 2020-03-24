@@ -4,6 +4,7 @@ from pptx.util import Pt
 from pptx.enum.text import MSO_ANCHOR, MSO_AUTO_SIZE, PP_ALIGN
 from pptx.dml.color import RGBColor
 import pandas as pd
+import os
 # from pptx.enum.dml import MSO_THEME_COLOR
 
 
@@ -181,3 +182,21 @@ def resize_table_font(table, size):
         for paragraph in cell.text_frame.paragraphs:
             for run in paragraph.runs:
                 run.font.size = Pt(size)
+
+
+def insert_image(path, shape, sh):
+    for i, s in enumerate(sh, start=1):
+        # i will be 'left' attribute
+        for j, h in enumerate(s, start=2):
+            # j will be 'top' attribute
+            if h == '' or h == 0:
+                pass
+            else:
+                k = int(h)
+                imgpath = os.path.join(path, "media/", str(k) + ".jpg")
+                # add_picture(image_file, left, top, width=None, height=None)
+                if os.path.isfile(imgpath):  # check if path/file exist first
+                    pic = shape.add_picture(imgpath, Inches(i), Inches(
+                        j), width=Inches(1), height=Inches(1))
+                else:
+                    pass

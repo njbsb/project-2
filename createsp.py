@@ -33,14 +33,6 @@ title_slide_layout = prs.slide_layouts[0]
 title_content_layout = prs.slide_layouts[1]
 sl_title, sh_title = ps.add_slide(prs, title_slide_layout, sptitle)
 
-# for i, df in enumerate(df_list):
-#     # reformat table
-#     print("-----------------------------------------------------\n{}\nSheet/df shape: {}, rowcount: {}".format(
-#         sheetname[i], str(df.shape), df.shape[0]))
-#     df_list[i] = ps.reindex_column(df)
-#     df_idlist[i] = ps.reindex_column(df_idlist[i])
-
-
 for i, df in enumerate(df_list):
     # add table here and image here
     df = ps.reindex_column(df)
@@ -55,23 +47,7 @@ for i, df in enumerate(df_list):
     dd = ps.reindex_column(dd)
     print(dd)
     dd, sh = ps.normalize_df(dd, 1)
-
-    for i, s in enumerate(sh, start=1):
-        # i will be 'left' attribute
-        for j, h in enumerate(s, start=1):
-            # j will be 'top' attribute
-            if h == '' or h == 0:
-                pass
-            else:
-                k = int(h)
-                imgpath = os.path.join(pa, "media/", str(k) + ".jpg")
-                # add_picture(image_file, left, top, width=None, height=None)
-                if os.path.isfile(imgpath):  # check if path/file exist first
-                    pic = shape.add_picture(imgpath, Inches(i), Inches(
-                        j), width=Inches(1), height=Inches(1))
-                else:
-                    pass
-
+    ps.insert_image(pa, shape, sh)
 
 ps.write_excel(df_list, 'sp_output2.xlsx', sheetname)
 ps.write_excel(df_idlist, 'sp_output3.xlsx', sheetname)
