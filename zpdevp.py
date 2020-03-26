@@ -100,7 +100,7 @@ mainpath = os.getcwd()
 zpdev_path = os.path.join(mainpath, "database/input/", "zpdev-march2020.xlsx")
 
 # CHANGE INPUT PATH 'zhpla_path' to 'file_name.xlsx'
-zhpla_file = pd.ExcelFile(zpdev_path)
+zpdev_file = pd.ExcelFile('c:/syafiq.rusla.....xlsx')
 
 df = pd.read_excel(zpdev_path, skiprows=4, nrows=None)
 

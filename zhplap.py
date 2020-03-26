@@ -104,12 +104,9 @@ def adjustalldf(dflist):
     return dflist
 
 
+# CHANGE INPUT PATH 'zhpla_path' to 'file_name.xlsx'
 mainpath = os.getcwd()
 zhpla_path = os.path.join(mainpath, "database/input/", "zhpla-march2020.xlsx")
-
-# CHANGE INPUT PATH 'zhpla_path' to 'file_name.xlsx'
-zhpla_file = pd.ExcelFile(zhpla_path)
-
 df = pd.read_excel(zhpla_path, skiprows=4, nrows=None)
 
 # returns reindexed big df
