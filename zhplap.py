@@ -99,6 +99,7 @@ def adjustalldf(dflist):
             pass
         else:
             dk = dk.drop([0], axis=0)
+        # rearrange rows
         dk = reindex_row(dk)
         dflist[i] = dk
     return dflist
