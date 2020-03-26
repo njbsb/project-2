@@ -100,6 +100,20 @@ def adjustalldf(dflist):
         else:
             dk = dk.drop([0], axis=0)
         # rearrange rows
+        # option 3
+        # dk['possum'] = dk[['2', '9', '11', '13', '15', '17', '19']].agg(
+        #     ', '.join, axis=1) # nned to ignore nan
+        dk = dk[['27', '28', '0', '2', '5', '6',
+                 '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23', '24', '25', '26', '31', '32', '33', '34', '35', '36', '37', '38', '39', '40', '41', '42', '43', '44', '45', '46', '47', '48', '49', '50', '51', '52', '53', '54', '55', '56', '57', '58', '59', '1', '3', '4', '7']]
+        # option 1
+        # cols = ['2', '9', '11', '13', '15', '17', '19']
+        # dk['combined'] = dk[cols].apply(
+        #     lambda row: ', '.join(row.values.astype(str)), axis=1)
+        # option 2
+        # dk['possum'] = dk['2'].astype(str) + dk['9'].astype(str) + dk['11'].astype(
+        #     str) + dk['13'].astype(str) + dk['15'].astype(str) + dk['17'].astype(str) + dk['19'].astype(str)
+
+        # print(dpossum)
         dk = reindex_row(dk)
         dflist[i] = dk
     return dflist
@@ -107,7 +121,7 @@ def adjustalldf(dflist):
 
 # CHANGE INPUT PATH 'zhpla_path' to 'file_name.xlsx'
 mainpath = os.getcwd()
-zhpla_path = os.path.join(mainpath, "database/input/", "zhpla-march2020.xlsx")
+zhpla_path = os.path.join(mainpath, "database/input/", "zhplac.xlsx")
 df = pd.read_excel(zhpla_path, skiprows=4, nrows=None)
 
 # returns reindexed big df
