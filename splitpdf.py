@@ -1,7 +1,6 @@
 import PyPDF2
 import re
 import os
-from pathlib import Path
 
 
 def getStaffID(page):
@@ -52,12 +51,12 @@ def splitpdf(pdf, pagelist, pagecount):
 inputfile = "bepcb21.pdf"
 mainpath = os.getcwd()
 input_path = os.path.join(mainpath, "database/input/", inputfile)
-
 outputdir = os.path.join(mainpath, "database/output/")
 if not os.path.exists(outputdir):
     os.makedirs(outputdir)
 # object = PyPDF2.PdfFileReader("bepcb21.pdf")
 # inputpdf = PyPDF2.PdfFileReader(open("bepcb21.pdf", "rb"))
+
 object = PyPDF2.PdfFileReader(input_path)
 pagelist, pagecount = getPageList(object)
 print("number of report in pdf: {}".format(len(pagelist)))
