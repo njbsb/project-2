@@ -40,6 +40,9 @@ print(pagelist)
 # inputpdf = PyPDF2.PdfFileReader(open("bepcb21.pdf", "rb"))
 # pagecount = PyPDF2.PdfFileReader("bepcb21.pdf").getNumPages()
 # pagecount2 = inputpdf.getNumPages()
+outputdir = os.path.join(mainpath, "database/output/")
+if not os.path.exists(outputdir):
+    os.makedirs(outputdir)
 
 for i in range(len(pagelist)):
     output = PyPDF2.PdfFileWriter()
@@ -59,9 +62,6 @@ for i in range(len(pagelist)):
     # print(staffID)
     filename = "%s.pdf" % staffID
 
-    outputdir = os.path.join(mainpath, "database/output/")
-    if not os.path.exists(outputdir):
-        os.makedirs(outputdir)
     with open(outputdir + filename, "wb") as outputStream:
         output.write(outputStream)
 print("DONE")
