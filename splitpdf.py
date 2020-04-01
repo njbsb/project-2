@@ -1,6 +1,19 @@
 import PyPDF2
 import re
 import os
+from pathlib import Path
+
+
+def getStaffID(page):
+    assID = "Assessee ID:"
+    assID_len = len(assID)
+    text = page.extractText()
+    asid_id = text.find(assID)
+    start = asid_id + assID_len
+    end = start + 8
+    staffID = text[start:end].lstrip("0")
+    return staffID
+
 
 inputfile = "bepcb21.pdf"
 mainpath = os.getcwd()
@@ -18,6 +31,7 @@ for i in range(0, NumPages):
     Text = PageObj.extractText()
     ResSearch = re.search(String, Text)
     if(ResSearch != None):
+        # insert page num of the first page of each report into list
         pagelist.append(i)
         # print(ResSearch)
 print("number of report in pdf: {}".format(len(pagelist)))
@@ -26,8 +40,6 @@ print(pagelist)
 # inputpdf = PyPDF2.PdfFileReader(open("bepcb21.pdf", "rb"))
 # pagecount = PyPDF2.PdfFileReader("bepcb21.pdf").getNumPages()
 # pagecount2 = inputpdf.getNumPages()
-assID = "Assessee ID:"
-assID_len = len(assID)
 
 for i in range(len(pagelist)):
     output = PyPDF2.PdfFileWriter()
@@ -36,23 +48,20 @@ for i in range(len(pagelist)):
         diff = pagelist[i+1] - pagelist[i]
     else:
         diff = NumPages - pagelist[i]
-    print("Number of page: %i" % diff)
+    # print("Number of page: %i" % diff)
     for j in range(diff):
         k = pagelist[i] + j
         output.addPage(object.getPage(k))
 
     # get id/page
-
     pageObj = object.getPage(pagelist[i])
-    pageText = pageObj.extractText()
-
-    assID_index = pageText.find(assID)
-    start = assID_index + assID_len
-    end = start + 8
-    staffID = pageText[start:end]
-    staffID = staffID.lstrip("0")
-    print(staffID)
+    staffID = getStaffID(pageObj)
+    # print(staffID)
     filename = "%s.pdf" % staffID
-    outputfile = os.path.join(mainpath, "database/output", filename)
-    with open(outputfile, "wb") as outputStream:
+
+    outputdir = os.path.join(mainpath, "database/output/")
+    if not os.path.exists(outputdir):
+        os.makedirs(outputdir)
+    with open(outputdir + filename, "wb") as outputStream:
         output.write(outputStream)
+print("DONE")
