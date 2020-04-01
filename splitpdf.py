@@ -10,11 +10,10 @@ object = PyPDF2.PdfFileReader(input_path)
 
 NumPages = object.getNumPages()
 print("Number of pages: {}".format(NumPages))
-
 String = "STAFF DETAILS"
 pagelist = []
 # extract text and do the search
-for i in range(0, 20):
+for i in range(0, NumPages):
     PageObj = object.getPage(i)
     Text = PageObj.extractText()
     ResSearch = re.search(String, Text)
@@ -27,6 +26,8 @@ print(pagelist)
 # inputpdf = PyPDF2.PdfFileReader(open("bepcb21.pdf", "rb"))
 # pagecount = PyPDF2.PdfFileReader("bepcb21.pdf").getNumPages()
 # pagecount2 = inputpdf.getNumPages()
+assID = "Assessee ID:"
+assID_len = len(assID)
 
 for i in range(len(pagelist)):
     output = PyPDF2.PdfFileWriter()
@@ -39,7 +40,20 @@ for i in range(len(pagelist)):
     for j in range(diff):
         k = pagelist[i] + j
         output.addPage(object.getPage(k))
-    filename = "document-page%s.pdf" % i
+
+    # get id/page
+
+    pageObj = object.getPage(pagelist[i])
+    pageText = pageObj.extractText()
+
+    assID_index = pageText.find(assID)
+    start = assID_index + assID_len
+    end = start + 8
+    staffID = pageText[start:end]
+    print(staffID)
+    # print("assessee id found at index: ", assID_index)
+    # filename = "document-page%s.pdf" % i
+    filename = "BePCB_%s.pdf" % staffID
     outputfile = os.path.join(mainpath, "database/output", filename)
     with open(outputfile, "wb") as outputStream:
         output.write(outputStream)
