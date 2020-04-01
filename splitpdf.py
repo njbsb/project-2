@@ -1,12 +1,15 @@
 import PyPDF2
 import re
+import os
 
-# open the pdf file
-object = PyPDF2.PdfFileReader("bepcb1.pdf")
+inputfile = "bepcb21.pdf"
+mainpath = os.getcwd()
+input_path = os.path.join(mainpath, "database/input/", inputfile)
+# object = PyPDF2.PdfFileReader("bepcb21.pdf")
+object = PyPDF2.PdfFileReader(input_path)
 
-# get number of pages
 NumPages = object.getNumPages()
-print(NumPages)
+print("Number of pages: {}".format(NumPages))
 
 String = "STAFF DETAILS"
 pagelist = []
@@ -21,22 +24,22 @@ for i in range(0, 20):
 print("number of report in pdf: {}".format(len(pagelist)))
 print(pagelist)
 
-inputpdf = PyPDF2.PdfFileReader(open("bepcb21.pdf", "rb"))
-pagecount = PyPDF2.PdfFileReader("bepcb21.pdf").getNumPages()
+# inputpdf = PyPDF2.PdfFileReader(open("bepcb21.pdf", "rb"))
+# pagecount = PyPDF2.PdfFileReader("bepcb21.pdf").getNumPages()
+# pagecount2 = inputpdf.getNumPages()
+
 for i in range(len(pagelist)):
     output = PyPDF2.PdfFileWriter()
     # check if i is the last index
     if(i < len(pagelist)-1):
         diff = pagelist[i+1] - pagelist[i]
-        print(diff)
-        for j in range(diff):
-            k = pagelist[i] + j
-            output.addPage(inputpdf.getPage(k))
     else:
-        diff = pagecount - pagelist[i]
-        print(diff)
-        for j in range(diff):
-            k = pagelist[i]+j
-            output.addPage(inputpdf.getPage(k))
-    with open("document-page%s.pdf" % i, "wb") as outputStream:
+        diff = NumPages - pagelist[i]
+    print(diff)
+    for j in range(diff):
+        k = pagelist[i] + j
+        output.addPage(object.getPage(k))
+    filename = "document-page%s.pdf" % i
+    outputfile = os.path.join(mainpath, "database/output", filename)
+    with open(outputfile, "wb") as outputStream:
         output.write(outputStream)
