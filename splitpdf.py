@@ -31,40 +31,35 @@ def getPageList(pdf):
     return pagelist, pagecount
 
 
+def splitpdf(pdf, pagelist, pagecount):
+    for i, startpage in enumerate(pagelist):
+        output = PyPDF2.PdfFileWriter()
+        if(i < len(pagelist) - 1):
+            diff = pagelist[i+1] - startpage
+        else:
+            diff = pagecount - startpage
+        for page in range(diff):
+            p = startpage + page
+            output.addPage(pdf.getPage(p))
+        firstPage = pdf.getPage(startpage)
+        staffID = getStaffID(firstPage)
+        filename = "%s.pdf" % staffID
+        with open(outputdir + filename, "wb") as outputStream:
+            output.write(outputStream)
+    print("DONE")
+
+
 inputfile = "bepcb21.pdf"
 mainpath = os.getcwd()
 input_path = os.path.join(mainpath, "database/input/", inputfile)
-# object = PyPDF2.PdfFileReader("bepcb21.pdf")
-object = PyPDF2.PdfFileReader(input_path)
-# NumPages = object.getNumPages()
-pagelist, pagecount = getPageList(object)
 
-print("number of report in pdf: {}".format(len(pagelist)))
-print(pagelist)
-
-# inputpdf = PyPDF2.PdfFileReader(open("bepcb21.pdf", "rb"))
-# pagecount = PyPDF2.PdfFileReader("bepcb21.pdf").getNumPages()
-# pagecount2 = inputpdf.getNumPages()
 outputdir = os.path.join(mainpath, "database/output/")
 if not os.path.exists(outputdir):
     os.makedirs(outputdir)
-
-for i in range(len(pagelist)):
-    output = PyPDF2.PdfFileWriter()
-    if(i < len(pagelist)-1):  # check if i is the last index
-        # diff is no of page for each sliced pdf
-        diff = pagelist[i+1] - pagelist[i]
-    else:
-        diff = pagecount - pagelist[i]
-    for j in range(diff):
-        k = pagelist[i] + j
-        output.addPage(object.getPage(k))
-
-    # get id/page
-    pageObj = object.getPage(pagelist[i])
-    staffID = getStaffID(pageObj)
-    # print(staffID)
-    filename = "%s.pdf" % staffID
-    with open(outputdir + filename, "wb") as outputStream:
-        output.write(outputStream)
-print("DONE")
+# object = PyPDF2.PdfFileReader("bepcb21.pdf")
+# inputpdf = PyPDF2.PdfFileReader(open("bepcb21.pdf", "rb"))
+object = PyPDF2.PdfFileReader(input_path)
+pagelist, pagecount = getPageList(object)
+print("number of report in pdf: {}".format(len(pagelist)))
+print(pagelist)
+splitpdf(object, pagelist, pagecount)
