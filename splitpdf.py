@@ -15,25 +15,30 @@ def getStaffID(page):
     return staffID
 
 
+def getPageList(pdf):
+    pagecount = pdf.getNumPages()
+    print("Number of pages: {}".format(pagecount))
+    String = "STAFF DETAILS"
+    pagelist = []
+    for i in range(0, pagecount):
+        page = pdf.getPage(i)
+        text = page.extractText()
+        ResSearch = re.search(String, text)
+        if(ResSearch != None):
+            # insert page num of the first page of each report into list
+            pagelist.append(i)
+            # print(ResSearch)
+    return pagelist, pagecount
+
+
 inputfile = "bepcb21.pdf"
 mainpath = os.getcwd()
 input_path = os.path.join(mainpath, "database/input/", inputfile)
 # object = PyPDF2.PdfFileReader("bepcb21.pdf")
 object = PyPDF2.PdfFileReader(input_path)
+# NumPages = object.getNumPages()
+pagelist, pagecount = getPageList(object)
 
-NumPages = object.getNumPages()
-print("Number of pages: {}".format(NumPages))
-String = "STAFF DETAILS"
-pagelist = []
-# extract text and do the search
-for i in range(0, NumPages):
-    PageObj = object.getPage(i)
-    Text = PageObj.extractText()
-    ResSearch = re.search(String, Text)
-    if(ResSearch != None):
-        # insert page num of the first page of each report into list
-        pagelist.append(i)
-        # print(ResSearch)
 print("number of report in pdf: {}".format(len(pagelist)))
 print(pagelist)
 
@@ -46,12 +51,11 @@ if not os.path.exists(outputdir):
 
 for i in range(len(pagelist)):
     output = PyPDF2.PdfFileWriter()
-    # check if i is the last index
-    if(i < len(pagelist)-1):
+    if(i < len(pagelist)-1):  # check if i is the last index
+        # diff is no of page for each sliced pdf
         diff = pagelist[i+1] - pagelist[i]
     else:
-        diff = NumPages - pagelist[i]
-    # print("Number of page: %i" % diff)
+        diff = pagecount - pagelist[i]
     for j in range(diff):
         k = pagelist[i] + j
         output.addPage(object.getPage(k))
@@ -61,7 +65,6 @@ for i in range(len(pagelist)):
     staffID = getStaffID(pageObj)
     # print(staffID)
     filename = "%s.pdf" % staffID
-
     with open(outputdir + filename, "wb") as outputStream:
         output.write(outputStream)
 print("DONE")
