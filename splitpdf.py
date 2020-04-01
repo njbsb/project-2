@@ -36,7 +36,7 @@ for i in range(len(pagelist)):
         diff = pagelist[i+1] - pagelist[i]
     else:
         diff = NumPages - pagelist[i]
-    print(diff)
+    print("Number of page: %i" % diff)
     for j in range(diff):
         k = pagelist[i] + j
         output.addPage(object.getPage(k))
@@ -50,10 +50,9 @@ for i in range(len(pagelist)):
     start = assID_index + assID_len
     end = start + 8
     staffID = pageText[start:end]
+    staffID = staffID.lstrip("0")
     print(staffID)
-    # print("assessee id found at index: ", assID_index)
-    # filename = "document-page%s.pdf" % i
-    filename = "BePCB_%s.pdf" % staffID
+    filename = "%s.pdf" % staffID
     outputfile = os.path.join(mainpath, "database/output", filename)
     with open(outputfile, "wb") as outputStream:
         output.write(outputStream)
