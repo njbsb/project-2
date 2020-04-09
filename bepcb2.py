@@ -79,7 +79,6 @@ def splitPdf(pdf, pagelist, pagecount, outputfolder):
 # Class main_frame
 ###########################################################################
 
-
 class main_frame (wx.Frame):
 
     def __init__(self, parent):
