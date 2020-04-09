@@ -30,7 +30,7 @@ def getPageList(pdf):
     return pagelist, pagecount
 
 
-def splitpdf(pdf, pagelist, pagecount):
+def splitPdf(pdf, pagelist, pagecount):
     for i, startpage in enumerate(pagelist):
         output = PyPDF2.PdfFileWriter()
         if(i < len(pagelist) - 1):
@@ -61,4 +61,4 @@ object = PyPDF2.PdfFileReader(input_path)
 pagelist, pagecount = getPageList(object)
 print("number of report in pdf: {}".format(len(pagelist)))
 print(pagelist)
-splitpdf(object, pagelist, pagecount)
+splitPdf(object, pagelist, pagecount)

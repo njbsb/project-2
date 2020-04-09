@@ -10,11 +10,14 @@
 import wx
 import wx.xrc
 import os
+import PyPDF2
+from splitpdf import getPageList, getStaffID, splitPdf
 ###########################################################################
 # Class main_frame
 ###########################################################################
 wildcard = "PDF source (*.pdf)|*.pdf|" \
     "All files (*.*)|*.*"
+outputdir = os.getcwd()
 
 
 class main_frame (wx.Frame):
@@ -33,22 +36,22 @@ class main_frame (wx.Frame):
         self.menu_file = wx.Menu()
         self.item_newtask = wx.MenuItem(
             self.menu_file, wx.ID_ANY, u"New Task" + u"\t" + u"Ctrl + N", wx.EmptyString, wx.ITEM_NORMAL)
-        self.menu_file.AppendItem(self.item_newtask)
+        self.menu_file.Append(self.item_newtask)
 
         self.item_exit = wx.MenuItem(
             self.menu_file, wx.ID_ANY, u"Exit" + u"\t" + u"Alt + F4", wx.EmptyString, wx.ITEM_NORMAL)
-        self.menu_file.AppendItem(self.item_exit)
+        self.menu_file.Append(self.item_exit)
 
         self.menubar.Append(self.menu_file, u"File")
 
         self.menu_help = wx.Menu()
         self.item_about = wx.MenuItem(
             self.menu_help, wx.ID_ANY, u"About", wx.EmptyString, wx.ITEM_NORMAL)
-        self.menu_help.AppendItem(self.item_about)
+        self.menu_help.Append(self.item_about)
 
         self.item_help = wx.MenuItem(
             self.menu_help, wx.ID_ANY, u"Help", wx.EmptyString, wx.ITEM_NORMAL)
-        self.menu_help.AppendItem(self.item_help)
+        self.menu_help.Append(self.item_help)
 
         self.menubar.Append(self.menu_help, u"Help")
 
@@ -138,18 +141,22 @@ class main_frame (wx.Frame):
         self.btn_split.Bind(wx.EVT_BUTTON, self.splitFile)
         self.btn_opendir.Bind(wx.EVT_BUTTON, self.openDirectory)
 
+        # Variables
+        self.link = ""
+
     def __del__(self):
         pass
 
     # Virtual event handlers, overide them in your derived class
     def selectFile(self, event):
         dlg = wx.FileDialog(self, message="Choose a file", defaultDir=self.currentDirectory,
-                            defaultFile="", wildcard=wildcard, style=wx.FD_OPEN | wx.FD_MULTIPLE | wx.FD_CHANGE_DIR)
+                            defaultFile="", wildcard=wildcard, style=wx.FD_OPEN | wx.FD_CHANGE_DIR)
         if dlg.ShowModal() == wx.ID_OK:
             paths = dlg.GetPaths()
             print("You chose the following file(s):")
-            pat = dlg.GetFilename()
-            self.label_filename.SetLabelText(pat)
+            filename = dlg.GetFilename()
+            self.label_filename.SetLabelText(filename)
+            self.link = paths
             # need to set limit to only 1 file
             # for pa in pat:
             #     self.label_filename.SetLabelText(pa)
@@ -159,8 +166,10 @@ class main_frame (wx.Frame):
         dlg.Destroy()
 
     def splitFile(self, event):
-        event.Skip()
-        # put def of split from bepcb here
+        # event.Skip()
+        object = PyPDF2.PdfFileReader(self.link)
+        pagelist, pagecount = getPageList(object)
+        # put method of split from bepcb here
 
     def openDirectory(self, event):
         # insert outputpath hereimport os
