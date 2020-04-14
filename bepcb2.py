@@ -12,14 +12,12 @@ import wx.xrc
 import os
 import re
 import PyPDF2
-# from splitpdf import getPageList, getStaffID, splitPdf
 
 wildcard = "PDF source (*.pdf)|*.pdf|" \
     "All files (*.*)|*.*"
-outputdir = os.getcwd()
-outputdir = os.path.join(os.getcwd(), "bepcb/output/")
-if not os.path.exists(outputdir):
-    os.makedirs(outputdir)
+mainpath = os.getcwd()
+print(mainpath)
+outputDir = ""
 
 ###########################################################################
 # def
@@ -66,10 +64,11 @@ def splitPdf(pdf, pagelist, pagecount, outputfolder):
         firstPage = pdf.getPage(startpage)
         staffID = getStaffID(firstPage)
         filename = "%s.pdf" % staffID
-        # outputdir = os.getcwd()
-        outputdir = os.path.join(os.getcwd(), outputfolder)
+        # output dir : output folder
+        outputdir = os.path.join(mainpath, outputfolder)
         if not os.path.exists(outputdir):
             os.makedirs(outputdir)
+        outputDir = outputdir
         with open(outputdir + "/" + filename, "wb") as outputStream:
             output.write(outputStream)
     print("DONE")
@@ -95,7 +94,7 @@ class main_frame (wx.Frame):
         self.menubar = wx.MenuBar(0)
         self.menu_file = wx.Menu()
         self.item_newtask = wx.MenuItem(
-            self.menu_file, wx.ID_ANY, u"New Task" + u"\t" + u"Ctrl + N", wx.EmptyString, wx.ITEM_NORMAL)
+            self.menu_file, wx.ID_ANY, u"New Task" + u"\t" + u"", wx.EmptyString, wx.ITEM_NORMAL)
         self.menu_file.Append(self.item_newtask)
 
         self.item_exit = wx.MenuItem(
@@ -214,6 +213,8 @@ class main_frame (wx.Frame):
         self.link = ""
         self.btn_opendir.Disable()
         self.currentDirectory = os.getcwd()
+        self.mainpath = mainpath
+        self.outputpath = ""
 
     def __del__(self):
         pass
@@ -247,16 +248,16 @@ class main_frame (wx.Frame):
             outputfolder = ""
             if(report_type == 'BePCB'):
                 keyword = 'STAFF DETAILS'
-                outputfolder = "bepcb/output/"
+                outputfolder = "output/bepcb/"
             elif(report_type == 'LC'):
                 keyword = 'STAFF DETAILS'
-                outputfolder = "lc/output/"
+                outputfolder = "output/lc/"
             elif(report_type == 'CV'):
                 keyword = 'STAFF CV'
-                outputfolder = "cv/output/"
+                outputfolder = "output/cv/"
             else:
                 pass
-
+            self.outputpath = os.path.join(mainpath, outputfolder)
             object = PyPDF2.PdfFileReader(pa)
             # keyword = self.textfield_keyword.GetValue()
             pagelist, pagecount = getPageList(object, keyword)
@@ -287,7 +288,8 @@ class main_frame (wx.Frame):
         # insert outputpath hereimport os
         # path = "C:/Users"
         # path = os.path.realpath(path)
-        os.startfile(outputdir)
+        # print(outputDir)
+        os.startfile(self.outputpath)
 
     def newTask_Reset(self, event):
         self.link = ""
