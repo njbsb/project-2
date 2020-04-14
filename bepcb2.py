@@ -212,7 +212,6 @@ class main_frame (wx.Frame):
         # Variables
         self.link = ""
         self.btn_opendir.Disable()
-        self.currentDirectory = os.getcwd()
         self.mainpath = mainpath
         self.outputpath = ""
 
@@ -221,28 +220,27 @@ class main_frame (wx.Frame):
 
     # Virtual event handlers, overide them in your derived class
     def selectFile(self, event):
-        dlg = wx.FileDialog(self, message="Choose a file", defaultDir=self.currentDirectory,
+        dlg = wx.FileDialog(self, message="Choose a file", defaultDir=self.mainpath,
                             defaultFile="", wildcard=wildcard, style=wx.FD_OPEN | wx.FD_CHANGE_DIR)
         if dlg.ShowModal() == wx.ID_OK:
             paths = dlg.GetPaths()
-
             filename = dlg.GetFilename()
             print("You chose the following file(s): %s" % filename)
             self.label_filename.SetLabelText(filename)
-            self.link = paths
-            # need to set limit to only 1 file
+            self.link = ''.join(paths)
             # for pa in pat:
             #     self.label_filename.SetLabelText(pa)
             # for path in paths:
             #     print(path)
             #     self.label_filename.SetLabelText(dlg.GetFileNames())
+            print(self.link)
         dlg.Destroy()
 
     def splitFile(self, event):
         report_type = self.cb_reporttype.GetValue()
         if self.link and report_type != 'Select Type':
-            pa = ''.join(self.link)
-            print(pa)
+            # pa = ''.join(self.link)
+            print(self.link)
             report_type = self.cb_reporttype.GetValue()
             keyword = ""
             outputfolder = ""
@@ -258,7 +256,7 @@ class main_frame (wx.Frame):
             else:
                 pass
             self.outputpath = os.path.join(mainpath, outputfolder)
-            object = PyPDF2.PdfFileReader(pa)
+            object = PyPDF2.PdfFileReader(self.link)
             # keyword = self.textfield_keyword.GetValue()
             pagelist, pagecount = getPageList(object, keyword)
             splitPdf(object, pagelist, pagecount, outputfolder)
@@ -286,13 +284,11 @@ class main_frame (wx.Frame):
 
     def openDirectory(self, event):
         # insert outputpath hereimport os
-        # path = "C:/Users"
-        # path = os.path.realpath(path)
-        # print(outputDir)
         os.startfile(self.outputpath)
 
     def newTask_Reset(self, event):
         self.link = ""
+        self.outputpath = ""
         self.text_reportcount.SetLabelText("Number of Reports:")
         self.text_status.SetLabelText("Status:")
         self.label_filename.SetLabelText("file_name.pdf ?")
