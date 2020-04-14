@@ -42,6 +42,7 @@ def splitPdf(pdf, pagelist, pagecount):
             output.addPage(pdf.getPage(p))
         firstPage = pdf.getPage(startpage)
         staffID = getStaffID(firstPage)
+        # print(staffID)
         filename = "%s.pdf" % staffID
         with open(outputdir + filename, "wb") as outputStream:
             output.write(outputStream)
