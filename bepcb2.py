@@ -239,11 +239,10 @@ class main_frame (wx.Frame):
     def splitFile(self, event):
         report_type = self.cb_reporttype.GetValue()
         if self.link and report_type != 'Select Type':
-            # pa = ''.join(self.link)
             print(self.link)
             report_type = self.cb_reporttype.GetValue()
             keyword = ""
-            outputfolder = ""
+            outputfolder = mainpath
             if(report_type == 'BePCB'):
                 keyword = 'STAFF DETAILS'
                 outputfolder = "output/bepcb/"
@@ -272,7 +271,6 @@ class main_frame (wx.Frame):
             button = event.GetEventObject()
             button.Disable()
             self.btn_selectfile.Disable()
-            # self.textfield_keyword.Disable()
             self.cb_reporttype.Disable()
             self.btn_opendir.Enable()
         else:
