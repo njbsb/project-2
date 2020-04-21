@@ -159,10 +159,16 @@ def arrange_renameCol(df, list_columnname):
     return df
 
 
+def remove_header(df):
+    df = df.drop([0])  # drop row of column name
+    df = df.reset_index(drop=True)
+    df = df.fillna("")
+    return df
+
+
 mainpath = os.getcwd()
-# CHANGE INPUT PATH 'zhpla_path' to 'file_name.xlsx'
-input_path = r''
-input_path = os.path.join(mainpath, "database/input/", "zhplac.xlsx")
+input_path = r'D:\Documents\Python\project-2\database\input\zhplac.xlsx'
+# input_path = os.path.join(mainpath, "database/input/", "zhplac.xlsx")
 df = pd.read_excel(input_path, skiprows=4, nrows=None)
 output_path = os.path.join(mainpath, "database/output/", "cleanzhpla.xlsx")
 
@@ -172,10 +178,7 @@ dflist = adjustalldf(dflist)
 bigdf = pd.concat(dflist).reset_index(drop=True)
 
 list_colname = create_columnName_list(bigdf)  # list of column name
-bigdf = bigdf.drop([0])  # drop row of column name
-bigdf = bigdf.reset_index(drop=True)
-bigdf = bigdf.fillna("")
-
+bigdf = remove_header(bigdf)  # for easy processing
 bigdf = addcolumn_pos_sum(bigdf)
 bigdf = addcolumn_superior(bigdf)
 bigdf = arrange_renameCol(bigdf, list_colname)
