@@ -153,6 +153,7 @@ def arrange_renameCol(df, list_columnname):
         s = str(i)
         column_order.append(s)  # basically same as index order but as string
         column_name.append(list_columnname[i])
+    # for date
     column_date = [58, 59, 1]
     for col in column_date:
         c = str(col)
@@ -160,6 +161,11 @@ def arrange_renameCol(df, list_columnname):
             date = df.iloc[i][c]
             date = date.replace('.', '/')
             df.at[i, c] = date
+    # for caps text
+    for i in df.index:
+        email = df.iloc[i]['4']
+        email = email.lower()
+        df.at[i, '4'] = email
     df = df.reindex(columns=column_order)
     df = df.sort_values(by=['0'], ascending=True)  # takde pun takpe
     df.columns = column_name
