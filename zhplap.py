@@ -153,6 +153,13 @@ def arrange_renameCol(df, list_columnname):
         s = str(i)
         column_order.append(s)  # basically same as index order but as string
         column_name.append(list_columnname[i])
+    column_date = [58, 59, 1]
+    for col in column_date:
+        c = str(col)
+        for i in df.index:
+            date = df.iloc[i][c]
+            date = date.replace('.', '/')
+            df.at[i, c] = date
     df = df.reindex(columns=column_order)
     df = df.sort_values(by=['0'], ascending=True)  # takde pun takpe
     df.columns = column_name
@@ -184,8 +191,6 @@ bigdf = addcolumn_superior(bigdf)
 bigdf = arrange_renameCol(bigdf, list_colname)
 
 print(bigdf)
-
-# CHANGE OUTPUT PATH 'cleanzhpla_path' to 'file_name.xlsx'
 print("Writing to excel...")
 bigdf.to_excel(output_path, index=None)
 # bigdf.to_csv('bigdf2.csv', index=None)

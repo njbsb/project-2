@@ -156,8 +156,17 @@ def arrange_renameCol(df, list_columnname):
         s = str(i)
         column_order.append(s)  # basically same as index order but as string
         column_name.append(list_columnname[i])
+    column_date = [4, 25, 29, 15, 30, 31]
+    for col in column_date:
+        c = str(col)
+        for i, row in df.iterrows():
+            date = df.iloc[i][c]
+            date = date.replace('.', '/')
+            df.at[i, c] = date
+    # part 1
     df = df.reindex(columns=column_order)
     df = df.sort_values(by=['0'], ascending=True)  # takde pun takpe
+    # part 2
     df.columns = column_name
     df.rename(columns={'Personnel Number': 'Staff Number',
                        'Formatted Name of Employee or Applicant': 'Staff Name',
@@ -173,13 +182,11 @@ input_path = r'D:\Documents\Python\project-2\database\input\zpdevc.xlsx'
 output_path = os.path.join(mainpath, "database/output/", "cleanzpdev.xlsx")
 df = pd.read_excel(input_path, skiprows=4, nrows=None)
 
-# returns reindexed big df
 df = reindex_column(df)
 dflist = slicebigdf(df)
 dflist = adjustalldf(dflist)
-print("Concatenating all dataframe...")
 bigdf = pd.concat(dflist).reset_index(drop=True)
-# bigdf.to_csv("zpdev_before.csv", index=None)
+bigdf.to_csv("zpdev_before.csv", index=None)
 list_colname = create_columnName_list(bigdf)
 bigdf = remove_header(bigdf)
 bigdf = addcolumn_ppa5yrs(bigdf)
@@ -189,5 +196,5 @@ bigdf = arrange_renameCol(bigdf, list_colname)
 print(bigdf)
 print("Writing to excel...")
 # bigdf.to_excel(output_path, index=None, header=None)
-bigdf.to_csv("zpdev_csv.csv", index=None)
+bigdf.to_csv("zpdev_after.csv", index=None)
 print("DONE")
