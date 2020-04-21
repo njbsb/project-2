@@ -66,11 +66,12 @@ def separate_posid(dx):
     return dx
 
 
-def slicebigdf(df, count, listofindex):
+def slicebigdf(df):
+    listofindex, count = getindexlist(df)
     dflist = []
     for i in range(count):
         st = listofindex[i]  # st is the starting index of the group
-        if i < lenlist-1:  # if st is not the last element in the list, then we can set the endpoint
+        if i < count-1:  # if st is not the last element in the list, then we can set the endpoint
             en = listofindex[i+1]  # endpoint is the next element(id)
             df_ = df.iloc[st+3:en]  # slice the big df into the specified range
         else:  # if st is the last element
@@ -96,33 +97,97 @@ def adjustalldf(dflist):
     return dflist
 
 
+def create_columnName_list(df):
+    list_colname = []
+    for i, columnName in df.iteritems():
+        list_colname.append(columnName[0])
+    list_colname.extend(['PPA 5 Years', 'SG (YM)'])
+    print(list_colname)
+    print("length of colname: %d" % len(list_colname))
+    return list_colname
+
+
+def remove_header(df):
+    df = df.drop([0])  # drop row of column name
+    df = df.reset_index(drop=True)
+    df = df.fillna("")
+    return df
+
+
+def addcolumn_ppa5yrs(df):
+    column_42 = []
+    ppa5yrs_col = ['40', '38', '36', '34', '32']
+    for i, row in df.iterrows():
+        text_ppa5yrs = ''
+        for year in ppa5yrs_col:
+            el = df.iloc[i][year]
+            if(el == ''):
+                pass
+            else:
+                el = str(el) + ', '
+                text_ppa5yrs += el
+        if(text_ppa5yrs[-2:] == ', '):
+            text_ppa5yrs = text_ppa5yrs[:-2]
+        column_42.append(text_ppa5yrs)
+    df.insert(42, '42', column_42, True)
+    return df
+
+
+def addcolumn_SGym(df):
+    column_43 = []
+    semicolon = ';'
+    for i, sg in df.iterrows():
+        sg_text = df.iloc[i]['25']
+        semicolon_index = sg_text.find(semicolon)
+        sg_date = sg_text[:semicolon_index-1]
+        sg_ym = sg_text[semicolon_index+1:]
+        df.at[i, '25'] = sg_date
+        column_43.append(sg_ym)
+    df.insert(43, '43', column_43, True)
+    return df
+
+
+def arrange_renameCol(df, list_columnname):
+    index_order = [0, 1, 3, 16, 17, 18, 32, 34, 36, 38, 40, 42, 4, 5, 6, 7, 8,
+                   9, 10, 11, 19, 24, 23, 22, 21, 20, 25, 43, 29, 15, 30, 31, 26, 28, 27]
+    column_order = []
+    column_name = []
+    for i in index_order:
+        s = str(i)
+        column_order.append(s)  # basically same as index order but as string
+        column_name.append(list_columnname[i])
+    df = df.reindex(columns=column_order)
+    df = df.sort_values(by=['0'], ascending=True)  # takde pun takpe
+    df.columns = column_name
+    df.rename(columns={'Personnel Number': 'Staff Number',
+                       'Formatted Name of Employee or Applicant': 'Staff Name',
+                       'Gender Key Desc': 'Gender', 'Sal. Grade': 'SG', 'Job Grade': 'JG',
+                       'Date Post': 'Date in Position', 'Join Dept': 'Date in Department',
+                       'Join Div.': 'Date in Division', 'Join Comp.': 'Date in Company'}, inplace=True)
+    return df
+
+
 mainpath = os.getcwd()
-zpdev_path = os.path.join(mainpath, "database/input/", "zpdev-march2020.xlsx")
-
-# CHANGE INPUT PATH 'zhpla_path' to 'file_name.xlsx'
-zpdev_file = pd.ExcelFile('c:/syafiq.rusla.....xlsx')
-
-df = pd.read_excel(zpdev_path, skiprows=4, nrows=None)
+# zpdev_path = os.path.join(mainpath, "database/input/", "zpdevc.xlsx")
+input_path = r'D:\Documents\Python\project-2\database\input\zpdevc.xlsx'
+output_path = os.path.join(mainpath, "database/output/", "cleanzpdev.xlsx")
+df = pd.read_excel(input_path, skiprows=4, nrows=None)
 
 # returns reindexed big df
 df = reindex_column(df)
-
-# returns list that contains index to use for slicing, and its length
-listofindex, lenlist = getindexlist(df)
-
-# returns list of df that has been sliced into groups
-dflist = slicebigdf(df, lenlist, listofindex)
-
-# return list of df that has been adjusted its columns
+dflist = slicebigdf(df)
 dflist = adjustalldf(dflist)
-
-cleanzpdev_path = os.path.join(mainpath, "database/output/", "cleanzpdev.xlsx")
-
-# combines all df in the dflist
 print("Concatenating all dataframe...")
-bigdf = pd.concat(dflist)
+bigdf = pd.concat(dflist).reset_index(drop=True)
+# bigdf.to_csv("zpdev_before.csv", index=None)
+list_colname = create_columnName_list(bigdf)
+bigdf = remove_header(bigdf)
+bigdf = addcolumn_ppa5yrs(bigdf)
+bigdf = addcolumn_SGym(bigdf)
+bigdf = arrange_renameCol(bigdf, list_colname)
 
-# CHANGE OUTPUT PATH 'cleanzhpla_path' to 'file_name.xlsx'
+print(bigdf)
 print("Writing to excel...")
-bigdf.to_excel(cleanzpdev_path, index=None, header=None)
+# bigdf.to_excel(output_path, index=None, header=None)
+bigdf.to_csv("zpdev_csv.csv", index=None)
 print("DONE")
