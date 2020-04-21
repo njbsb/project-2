@@ -75,3 +75,15 @@ database/output/n binti .pdf
 adleencv.xlsx
 database/output/adleencv.pdf
 database/output/shazlinacv.pdf
+bigdf2_saved.csv
+bigdf2.csv
+superior.csv
+tempo_bigdf.csv
+database/input/staff_id.txt
+database/input/zhpla_column_index_order.csv
+database/input/rowstostring.xlsx
+database/input/sp_head_(commercial).xlsx
+database/output/sp_head_commercial.pptx
+zpdev_before.csv
+zpdev_csv.csv
+.gitignore
