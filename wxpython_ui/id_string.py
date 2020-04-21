@@ -123,7 +123,7 @@ class MyFrame1 (wx.Frame):
 
     def runCode(self, event):
         idfile = pd.ExcelFile(self.filepath)
-        df = pd.read_excel(idfile, usecols='A')
+        df = pd.read_excel(idfile, usecols='A', sheet_name='Sheet2')
         df = df.applymap(str)
         print(df)
         # s = df['ID'].str.cat(sep=",")
