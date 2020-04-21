@@ -30,6 +30,7 @@ def getindexlist(df):
 
 
 def risecolumn(dx):
+    # function: to raise sunken column
     dx = dx.drop([0], axis=0)
     dxlen = len(dx)
     newindex = [i for i in range(dxlen)]
@@ -50,6 +51,7 @@ def risecolumn(dx):
 
 
 def separate_posid(dx):
+    # function: separate posID and EndDate that are in the same column
     for i, v in dx.iteritems():
         if(i == 0):
             pass
@@ -65,11 +67,16 @@ def separate_posid(dx):
     return dx
 
 
-def slicebigdf(df, count, listofindex):
+def slicebigdf(df):
+    # function: identify group of data in original zhpla
+    # input: dirty dataframe
+    # output: list containing small group of df
+    # returns list that contains index to use for slicing, and its length
+    listofindex, count = getindexlist(df)
     dflist = []
     for i in range(count):
         st = listofindex[i]  # st is the starting index of the group
-        if i < lenlist-1:  # if st is not the last element in the list, then we can set the endpoint
+        if i < count-1:  # if st is not the last element in the list, then we can set the endpoint
             en = listofindex[i+1]  # endpoint is the next element(id)
             df_ = df.iloc[st+3:en]  # slice the big df into the specified range
         else:  # if st is the last element
@@ -83,66 +90,100 @@ def slicebigdf(df, count, listofindex):
 
 
 def adjustalldf(dflist):
+    # function: remove nan rows, move sunken column up, remove header except for group 1
+    # input: dflist containing dirty df_group
+    # output: dflist containing slightly clean df_group
     print("Adjusting columns...")
     for i, dk in enumerate(dflist):
         dk['0'] = dk['1']  # reassign posid column to the first column
-        d0 = dk['0']
-        d1 = dk['1']
-        d3 = dk['3']
-        d4 = dk['4']
-        dk['0'] = separate_posid(d0)
-        dk['1'] = risecolumn(d1)
-        dk['3'] = risecolumn(d3)
-        dk['4'] = risecolumn(d4)
+        dk['0'] = separate_posid(dk['0'])
+        dk['1'] = risecolumn(dk['1'])
+        dk['3'] = risecolumn(dk['3'])
+        dk['4'] = risecolumn(dk['4'])
         dk = dk.dropna(how='all')
         if i == 0:
-            pass
+            pass  # dont remove header if group first
         else:
             dk = dk.drop([0], axis=0)
-        # rearrange rows
-        # option 3
-        # dk['possum'] = dk[['2', '9', '11', '13', '15', '17', '19']].agg(
-        #     ', '.join, axis=1) # nned to ignore nan
-        dk = dk[['27', '28', '0', '2', '5', '6',
-                 '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23', '24', '25', '26', '31', '32', '33', '34', '35', '36', '37', '38', '39', '40', '41', '42', '43', '44', '45', '46', '47', '48', '49', '50', '51', '52', '53', '54', '55', '56', '57', '58', '59', '1', '3', '4', '7']]
-        # option 1
-        # cols = ['2', '9', '11', '13', '15', '17', '19']
-        # dk['combined'] = dk[cols].apply(
-        #     lambda row: ', '.join(row.values.astype(str)), axis=1)
-        # option 2
-        # dk['possum'] = dk['2'].astype(str) + dk['9'].astype(str) + dk['11'].astype(
-        #     str) + dk['13'].astype(str) + dk['15'].astype(str) + dk['17'].astype(str) + dk['19'].astype(str)
-
-        # print(dpossum)
         dk = reindex_row(dk)
         dflist[i] = dk
     return dflist
 
 
-# CHANGE INPUT PATH 'zhpla_path' to 'file_name.xlsx'
+def addcolumn_pos_sum(df):
+    column_60 = []
+    posSum_cols = ['2', '9', '11', '13', '15', '17', '19']
+    for i, row in df.iterrows():
+        text_sum = ''
+        for j, element in enumerate(posSum_cols):
+            el = df.iloc[i][element]
+            if(el == ''):
+                pass
+            else:
+                el += ', '
+                text_sum += el
+        if(text_sum[-2:] == ', '):
+            text_sum = text_sum[:-2]
+        column_60.append(text_sum)
+    df.insert(60, '60', column_60, True)
+    return df
+
+
+def addcolumn_superior(df):
+    df_staff = df[['0', '27', '28']].copy()
+    df_staff.rename(columns={'0': '7', '27': '61', '28': '62'}, inplace=True)
+    newdf = pd.merge(df, df_staff, on='7', how='left').fillna('')
+    return newdf
+
+
+def create_columnName_list(df):
+    list_colname = []
+    for i, columnName in df.iteritems():
+        list_colname.append(columnName[0])
+    list_colname.extend(['Pos SUM', 'Superior ID', 'Superior Name'])
+    return list_colname
+
+
+def arrange_renameCol(df, list_columnname):
+    index_order = [27, 28, 43, 44, 45, 46, 47, 48, 49, 0, 60, 7, 61, 62, 2, 8, 9, 10, 11, 12,
+                   13, 14, 15, 16, 17, 18, 19, 20, 41, 42, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 1, 3, 4]
+    column_order = []
+    column_name = []
+    for i in index_order:
+        s = str(i)
+        column_order.append(s)  # basically same as index order but as string
+        column_name.append(list_columnname[i])
+    df = df.reindex(columns=column_order)
+    df = df.sort_values(by=['0'], ascending=True)  # takde pun takpe
+    df.columns = column_name
+    return df
+
+
 mainpath = os.getcwd()
-zhpla_path = os.path.join(mainpath, "database/input/", "zhplac.xlsx")
-df = pd.read_excel(zhpla_path, skiprows=4, nrows=None)
+# CHANGE INPUT PATH 'zhpla_path' to 'file_name.xlsx'
+input_path = r''
+input_path = os.path.join(mainpath, "database/input/", "zhplac.xlsx")
+df = pd.read_excel(input_path, skiprows=4, nrows=None)
+output_path = os.path.join(mainpath, "database/output/", "cleanzhpla.xlsx")
 
-# returns reindexed big df
-df = reindex_column(df)
-
-# returns list that contains index to use for slicing, and its length
-listofindex, lenlist = getindexlist(df)
-
-# returns list of df that has been sliced into groups
-dflist = slicebigdf(df, lenlist, listofindex)
-
-# return list of df that has been adjusted its columns
+df = reindex_column(df)  # reindexed column by number
+dflist = slicebigdf(df)
 dflist = adjustalldf(dflist)
+bigdf = pd.concat(dflist).reset_index(drop=True)
 
-cleanzhpla_path = os.path.join(mainpath, "database/output/", "cleanzhpla.xlsx")
+list_colname = create_columnName_list(bigdf)  # list of column name
+bigdf = bigdf.drop([0])  # drop row of column name
+bigdf = bigdf.reset_index(drop=True)
+bigdf = bigdf.fillna("")
 
-# combines all df in the dflist
-print("Concatenating all dataframe...")
-bigdf = pd.concat(dflist)
+bigdf = addcolumn_pos_sum(bigdf)
+bigdf = addcolumn_superior(bigdf)
+bigdf = arrange_renameCol(bigdf, list_colname)
+
+print(bigdf)
 
 # CHANGE OUTPUT PATH 'cleanzhpla_path' to 'file_name.xlsx'
 print("Writing to excel...")
-bigdf.to_excel(cleanzhpla_path, index=None, header=None)
+bigdf.to_excel(output_path, index=None)
+# bigdf.to_csv('bigdf2.csv', index=None)
 print("DONE")
