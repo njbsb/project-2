@@ -24,18 +24,26 @@ outputDir = ""
 ###########################################################################
 
 
-def getStaffID(page):
-    assID = "Assessee ID:"
+def getStaffID(report_type, page):
+    print(report_type)
+    if(report_type == 'BePCB' or report_type == 'LC'):
+        assID = 'Assessee ID:'
+        nextWord = 'Position'
+    elif(report_type == 'CV'):
+        assID = 'STAFF NO.: '
+        nextWord = 'POSITION'
+    # assID = ''
     assID_len = len(assID)
     text = page.extractText()
     asid_id = text.find(assID)
+    nextword_index = text.find(nextWord)
     start = asid_id + assID_len
-    end = start + 8
+    end = nextword_index
     staffID = text[start:end].lstrip("0")
     return staffID
 
 
-def getPageList(pdf, String):
+def getPageList(pdf, keyword):
     pagecount = pdf.getNumPages()
     print("Number of pages: {}".format(pagecount))
     # String = "STAFF DETAILS"
@@ -43,26 +51,27 @@ def getPageList(pdf, String):
     for i in range(0, pagecount):
         page = pdf.getPage(i)
         text = page.extractText()
-        ResSearch = re.search(String, text)
+        ResSearch = re.search(keyword, text)  # String represents keyword
         if(ResSearch != None):
             # insert page num of the first page of each report into list
             pagelist.append(i)
-            # print(ResSearch)
     return pagelist, pagecount
 
 
-def splitPdf(pdf, pagelist, pagecount, outputfolder):
+def splitPdf(pdf, report_type, pagelist, pagecount, outputfolder):
     for i, startpage in enumerate(pagelist):
         output = PyPDF2.PdfFileWriter()
         if(i < len(pagelist) - 1):
             diff = pagelist[i+1] - startpage
         else:
             diff = pagecount - startpage
+        # diff is the number of page for each report
         for page in range(diff):
             p = startpage + page
             output.addPage(pdf.getPage(p))
         firstPage = pdf.getPage(startpage)
-        staffID = getStaffID(firstPage)
+        # put if statement if bepcb, then getstaffDID
+        staffID = getStaffID(report_type, firstPage)
         filename = "%s.pdf" % staffID
         # output dir : output folder
         outputdir = os.path.join(mainpath, outputfolder)
@@ -244,13 +253,13 @@ class main_frame (wx.Frame):
             keyword = ""
             outputfolder = mainpath
             if(report_type == 'BePCB'):
-                keyword = 'STAFF DETAILS'
+                keyword = 'Assessee ID:'
                 outputfolder = "output/bepcb/"
             elif(report_type == 'LC'):
                 keyword = 'STAFF DETAILS'
                 outputfolder = "output/lc/"
             elif(report_type == 'CV'):
-                keyword = 'STAFF CV'
+                keyword = 'STAFF NO.'
                 outputfolder = "output/cv/"
             else:
                 pass
@@ -258,7 +267,7 @@ class main_frame (wx.Frame):
             object = PyPDF2.PdfFileReader(self.link)
             # keyword = self.textfield_keyword.GetValue()
             pagelist, pagecount = getPageList(object, keyword)
-            splitPdf(object, pagelist, pagecount, outputfolder)
+            splitPdf(object, report_type, pagelist, pagecount, outputfolder)
             if len(pagelist) > 1:
                 self.text_reportcount.SetLabelText(
                     "Number of Reports: %d" % len(pagelist))
