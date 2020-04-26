@@ -29,6 +29,16 @@ def colnum_string(n):
     return string
 
 
+def getDate():
+    dt_tm = str(datetime.now())
+    time = dt_tm[11:16]
+    timeHR = dt_tm[11:13] + dt_tm[14:16]
+    date = dt_tm[8:10] + "-" + dt_tm[5:7] + "-" + dt_tm[0:4]
+    dateHR = dt_tm[8:10] + dt_tm[5:7] + dt_tm[0:4]
+    time_date = timeHR + "_" + dateHR
+    return time, date, time_date
+
+
 class fr_idToString (wx.Frame):
 
     def __init__(self, parent):
@@ -80,7 +90,7 @@ class fr_idToString (wx.Frame):
 
         sbSizer4 = wx.StaticBoxSizer(wx.StaticBox(
             sbSizer2.GetStaticBox(), wx.ID_ANY, u"Specify"), wx.HORIZONTAL)
-
+        # from here
         bSizer4 = wx.BoxSizer(wx.VERTICAL)
 
         self.m_staticText3 = wx.StaticText(sbSizer4.GetStaticBox(
@@ -137,7 +147,7 @@ class fr_idToString (wx.Frame):
         bSizer411.Add(self.txtctrl_separator, 0, wx.ALL, 5)
 
         sbSizer4.Add(bSizer411, 1, wx.EXPAND, 5)
-
+        # end here
         sbSizer2.Add(sbSizer4, 1, wx.EXPAND, 5)
 
         self.btn_run = wx.Button(sbSizer2.GetStaticBox(
@@ -171,14 +181,14 @@ class fr_idToString (wx.Frame):
         self.mainpath = mainpath
         self.file_link = ''
         self.excelFile = None
-        self.currentSheet = None
+        self.currentSheetDF = None
         # self.selectedDF = None
 
         # Connect Events
         self.btn_selectfile.Bind(wx.EVT_BUTTON, self.selectFile)
         self.btn_run.Bind(wx.EVT_BUTTON, self.runCode)
         self.btn_openDir.Bind(wx.EVT_BUTTON, self.openFolder)
-        self.Bind(wx.EVT_CHECKBOX, self.disableColumnInput)
+        # self.Bind(wx.EVT_CHECKBOX, self.disableColumnInput)
         self.cb_selectSheet.Bind(wx.EVT_COMBOBOX, self.showColumns)
         # self.cb_selectColumn.Bind(wx.EVT_COMBOBOX, self.show)
 
@@ -216,12 +226,14 @@ class fr_idToString (wx.Frame):
         self.cb_selectColumn.Clear()
         sheet = self.cb_selectSheet.GetValue()
         df = pd.read_excel(self.excelFile, sheet_name=sheet)
+        self.currentSheetDF = df
         columnlist = list(df.columns)
         # change unnamed to ABC here
         for i, c in enumerate(columnlist):
             if(c[:7] == 'Unnamed'):
                 newcol = colnum_string(i+1)
                 columnlist[i] = newcol
+        self.currentSheetDF.columns = columnlist
         self.cb_selectColumn.Append(columnlist)
 
     def disableColumnInput(self, event):
@@ -232,40 +244,36 @@ class fr_idToString (wx.Frame):
             self.column_name.Enable()
 
     def runCode(self, event):
-        dt_tm = str(datetime.now())
-        time = dt_tm[11:16]
-        timeHR = dt_tm[11:13] + dt_tm[14:16]
-        date = dt_tm[8:10] + "-" + dt_tm[5:7] + "-" + dt_tm[0:4]
-        dateHR = dt_tm[8:10] + dt_tm[5:7] + dt_tm[0:4]
-        textfilename = "staffid ({}_{}).txt".format(timeHR, dateHR)
-        print(textfilename)
 
+        time, date, time_date = getDate()
         self.txt_status.SetLabelText("Status: Running....")
         if(self.file_link == None or self.excelFile == None):
             print("No file chosen yet!")
             self.txt_status.SetLabelText("Status:")
         else:
-            # file = pd.ExcelFile(self.file_link)
-            file = self.excelFile
             sheetname = self.cb_selectSheet.GetValue()
             columnname = self.cb_selectColumn.GetValue()
-            df = pd.read_excel(file, sheet_name=sheetname, usecols=columnname)
-            print(datetime.now())
-            if(df.empty):
-                print("sheet is empty!")
+            if(sheetname == "" or columnname == ""):
+                print("shit")
             else:
-                df = df.applymap(str)  # as str
-                print(df)
-                s = df.iloc[:, 0].str.cat(sep=",")  # get the first column
-                # print(s)
-                print("Generated on: \n"+date + "\n" + time)
-                textfilename = "StaffID ({}_{}).txt".format(time, date)
-                textdir = os.path.join(mainpath, textfilename)
-                id_textfile = open(textdir, "w")
-                id_textfile.write(s)
-                id_textfile.close()
-                self.txt_status.SetLabelText("Status: OK")
-                os.startfile(textdir)
+                print("Sheet name: " + sheetname, "Column name: " + columnname)
+                # df = pd.read_excel(file, sheet_name=sheetname)
+                df = self.currentSheetDF[[columnname]]
+                if(df.empty):
+                    print("sheet is empty!")
+                else:
+                    df = df.applymap(str)  # as str
+                    print(df)
+                    s = df.iloc[:, 0].str.cat(sep=",")  # get the first column
+                    # print(s)
+                    print("Generated on: {}, {}".format(time, date))
+                    textfilename = "StaffID ({}).txt".format(time_date)
+                    textdir = os.path.join(mainpath, textfilename)
+                    id_textfile = open(textdir, "w")
+                    id_textfile.write(s)
+                    id_textfile.close()
+                    self.txt_status.SetLabelText("Status: OK")
+                    os.startfile(textdir)
 
     def openFolder(self, event):
         os.startfile(mainpath)
