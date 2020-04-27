@@ -76,7 +76,7 @@ class fr_downloader (wx.Frame):
         b_layout_ID.Add(self.txt_filepath, 0, wx.ALL, 5)
 
         self.txt_countID = wx.StaticText(b_layout_ID.GetStaticBox(
-        ), wx.ID_ANY, u"count", wx.DefaultPosition, wx.DefaultSize, 0)
+        ), wx.ID_ANY, u"", wx.DefaultPosition, wx.DefaultSize, 0)
         self.txt_countID.Wrap(-1)
         self.txt_countID.SetForegroundColour(
             wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW))
@@ -109,7 +109,7 @@ class fr_downloader (wx.Frame):
                                wx.ALIGN_CENTER | wx.ALL, 5)
 
         self.txt_status = wx.StaticText(b_layout_selection.GetStaticBox(
-        ), wx.ID_ANY, u"status -....-", wx.DefaultPosition, wx.DefaultSize, 0)
+        ), wx.ID_ANY, u"", wx.DefaultPosition, wx.DefaultSize, 0)
         self.txt_status.Wrap(-1)
         self.txt_status.SetForegroundColour(
             wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW))
@@ -117,7 +117,7 @@ class fr_downloader (wx.Frame):
         b_layout_selection.Add(self.txt_status, 0, wx.ALL, 5)
 
         self.txt_countRemaining = wx.StaticText(b_layout_selection.GetStaticBox(
-        ), wx.ID_ANY, u"count_remaining", wx.DefaultPosition, wx.DefaultSize, 0)
+        ), wx.ID_ANY, u"", wx.DefaultPosition, wx.DefaultSize, 0)
         self.txt_countRemaining.Wrap(-1)
         self.txt_countRemaining.SetForegroundColour(
             wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW))
@@ -126,11 +126,19 @@ class fr_downloader (wx.Frame):
 
         b_layout_h.Add(b_layout_selection, 1, wx.EXPAND, 5)
 
+        self.txtfld_failed = wx.TextCtrl(b_layout_selection.GetStaticBox(
+        ), wx.ID_ANY, u"Failed", wx.DefaultPosition, wx.Size(200, 100), 0 | wx.NO_BORDER | wx.TE_MULTILINE | wx.VSCROLL | wx.BORDER_NONE)
+        self.txtfld_failed.SetForegroundColour(wx.Colour(36, 106, 115))
+        self.txtfld_failed.SetBackgroundColour(wx.Colour(0, 177, 169))
+        self.txtfld_failed.Enable(True)
+
+        b_layout_selection.Add(self.txtfld_failed, 0, wx.ALL, 5)
+
         b_layout_output = wx.StaticBoxSizer(wx.StaticBox(
             b_layout_h.GetStaticBox(), wx.ID_ANY, u"Output"), wx.VERTICAL)
 
         self.txt_statusFinal = wx.StaticText(b_layout_output.GetStaticBox(
-        ), wx.ID_ANY, u"statusFinal", wx.DefaultPosition, wx.DefaultSize, 0)
+        ), wx.ID_ANY, u"", wx.DefaultPosition, wx.DefaultSize, 0)
         self.txt_statusFinal.Wrap(-1)
         self.txt_statusFinal.SetForegroundColour(
             wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW))
@@ -236,12 +244,13 @@ class fr_downloader (wx.Frame):
                     print(e.read())
                     print(e.reason + " for staff ID: " + str(id))
                     failed_list.append(id)
-            self.txt_status.SetLabelText("Done :D")
+            self.txt_status.SetLabelText("Status: Done")
             if not failed_list:
                 self.txt_countRemaining.SetLabelText("Download successful")
             else:
                 self.txt_countRemaining.SetLabelText(
-                    "Failed: {} \n{}".format(len(failed_list), str(failed_list)))
+                    "Failed: {}".format(len(failed_list)))
+                self.txtfld_failed.SetLabelText(str(failed_list))
 
     def openDir(self, event):
         os.startfile(self.outputFolder)
@@ -261,11 +270,13 @@ class fr_downloader (wx.Frame):
         ids = self.txtfld_strings.GetValue()
         if(ids == ''):
             self.txt_countID.SetLabelText('')
-        if(ids[-1] == ','):
-            ids = ids[:-1]
-        countID = ids.count(',') + 1
-        if(countID != None or countID != 0):
-            self.txt_countID.SetLabelText("Number of ID: %s" % str(countID))
+        else:
+            if(ids[-1] == ','):
+                ids = ids[:-1]
+            countID = ids.count(',') + 1
+            if(countID != None or countID != 0):
+                self.txt_countID.SetLabelText(
+                    "Number of ID: %s" % str(countID))
 
 
 class MainApp(wx.App):
