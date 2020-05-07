@@ -55,17 +55,41 @@ def rearrangeTA_column(df_zh, df_zp):
     df = reindex_column(df)  # convert column name to index
     final = [0, 1, 33, 25, 26, 35, 2, 3, 4, 5, 6, 7, 8, 9, 10, 50, 51, 63, 64, 36, 37, 38, 39, 40, 41, 52, 53, 54, 55, 56, 42, 43, 44,
              45, 46, 47, 48, 49, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 27, 28, 57, 58, 29, 30, 31, 32, 59, 34, 60, 61, 62]
-    arr_column = []
+    final_colname = []
     if(len(ori_colname) == len(final)):
         for i in final:
-            arr_column.append(ori_colname[i])
+            if i == 2:
+                final_colname.append('OT Status')
+            else:
+                final_colname.append(ori_colname[i])
+        # final_colname = [oc for oc in ori_colname]
+    # final_colname[2] = 'OT Status'
     df = df.reindex(columns=final)
-    df.columns = arr_column
+    df = reindex_column(df)
+    print('dated', df[[15, 25, 26, 27, 28, 29, 30, 64]])
+    # need to reindex column first
+    indexwithdate = [15, 25, 26, 27, 28, 29, 30, 64]
+    for i, column in df.iteritems():
+        if(i in indexwithdate):
+            # loop through column
+            for j, row in column.iteritems():
+                if type(row) == datetime:
+                    column[j] = row.date()
+                else:
+                    if type(row) == str:
+                        if ' ' in row:
+                            column[j] = row.replace(' ', '')
+                    # else would be str or float for nan
+        elif i == 2:
+            for j, row in column.iteritems():
+                column[j] = ''
+    print('dated', df[[15, 25, 26, 27, 28, 29, 30, 64]])
+    df.columns = final_colname
     return df
 
 
 directory = os.getcwd()
-opt = input("insert input:")
+opt = input("insert input: \n1. Full DB\n2. Partial DB\nAnswer: ")
 if opt == '1':
     zhpla_path = r'D:\Documents\Python\files\ZHPLA_MAY20.xlsx'
     zpdev_path = r'D:\Documents\Python\files\ZPDEV_MAY20.xlsx'
@@ -92,5 +116,5 @@ df_zh = drop_unusedColumn(df_zh, 'zh')
 df_zp = drop_unusedColumn(df_zp, 'zp')
 
 df_merge = rearrangeTA_column(df_zh, df_zp)
-print(df_merge)
+# print(df_merge)
 df_merge.to_csv("TAFULL.csv", header=True, index=False)
