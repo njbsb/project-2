@@ -22,10 +22,11 @@ for s in range(sp_numberofsheet):
     df_spexcel = pd.read_excel(
         sp_input_path, sheet_name=s, skiprows=2, usecols='F:K', nrows=None).iloc[:, [1, 3, 5]]
     # df_spexcel = df_spexcel.iloc[:, [1, 3, 5]]
-    df_id = pd.read_excel(sp_input_path, sheet_name=s, skiprows=2, usecols='A:C', nrows=None).fillna('')
+    df_id = pd.read_excel(sp_input_path, sheet_name=s,
+                          skiprows=2, usecols='A:C', nrows=None).fillna('')
     # df_spexcel = df_spexcel.fillna("")
-    df_list.append(df_spexcel) # for each sheet
-    df_idlist.append(df_id) # for each sheet
+    df_list.append(df_spexcel)  # for each sheet
+    df_idlist.append(df_id)  # for each sheet
 for ids in df_idlist:
     print(ids)
 # sp excel file is created, df_list contain list of dataframe
@@ -44,24 +45,24 @@ sl_title, sh_title = add_slide(prs, title_slide_layout, "Title")
 new_dflist = []
 for i, df in enumerate(df_list):
     shname = sp_inputfile.sheet_names[i]
-    print("\nNEW SHEET: {}".format(shname))    
-    colname = list(df.columns) # list of original column name
+    print("\nNEW SHEET: {}".format(shname))
+    colname = list(df.columns)  # list of original column name
     # colname = [i.replace(i[-2:],'') for i in colname] # replace ".1" to ""
     colname = [i.replace(i, str(colname.index(i)))
                for i in colname]  # colname gonna contain [0, 1, 2]
     df.columns = colname  # rename the column of df to [0, 1, 2]
-    
-    
+
     print(df)
-    print("Sheet/dataframe shape: {}, rowcount: {}".format(str(df.shape), df.shape[0])) # tuple of (rowlength, collength)
-    
+    print("Sheet/dataframe shape: {}, rowcount: {}".format(str(df.shape),
+                                                           df.shape[0]))  # tuple of (rowlength, collength)
+
     j = df.count()  # j is a series that contains length of each column
     seriessize = j.size  # size of series. eg: 3
     j.reset_index(drop=True)  # reindex to numeric value
     # print("series size: {} \ncount of each column:".format(seriessize))
     # print(j)
     j_indexmax = int(j.idxmax())  # index for the highest row count, single val
-    valueofhighest = j[j_indexmax] # value of the max row count
+    valueofhighest = j[j_indexmax]  # value of the max row count
     print("column with most row: line {}, index: {}, value: {}".format(
         j_indexmax+1, j_indexmax, valueofhighest))
 
@@ -136,15 +137,14 @@ for i, df in enumerate(df_list):
     # print("new_dflist length: {}".format(len(new_dflist)))
     # print(new_dflist)
 
-    
     slide, shape = add_slide(prs, title_content_layout, "Position: .....")
-    
+    print(sheet_list2)
     create_table(slide, sheet_list2, 1, 10)
 
-    
     start = 0.5
-    for i in range(4): # add_picture(image_file, left, top, width=None, height=None)
-        pic = slide.shapes.add_picture('image.jpg', pptx.util.Inches(start), pptx.util.Inches(1), width = pptx.util.Inches(1), height = pptx.util.Inches(1))
+    for i in range(4):  # add_picture(image_file, left, top, width=None, height=None)
+        pic = slide.shapes.add_picture('image.jpg', pptx.util.Inches(
+            start), pptx.util.Inches(1), width=pptx.util.Inches(1), height=pptx.util.Inches(1))
         start += 1.0
     # create_table2(slide, df, 1, 10)
 

@@ -136,7 +136,6 @@ def page_3in1(dflist):
             column = line.tolist()
             column.insert(0, str(i+1))
             eachpagelist.append(column)
-    # pagelist.append(eachpagelist)
     pagelist = [eachpagelist]
     return pagelist
 
@@ -184,6 +183,27 @@ def page_separate123(dflist):
     return pagelist
 
 
+def manage_dfline(dflines):
+    for i, dfline in enumerate(dflines):
+        linelen = len(dfline)
+        if linelen > 5:
+            if linelen <= 9:
+                df_a, df_b = splitBelow9Rows(dfline, linelen)
+                splitlist = [df_a, df_b]
+                dflines[i] = splitlist
+            elif linelen <= 15:
+                df_a, df_b, df_c = splitBelow15Rows(dfline, linelen)
+                splitlist = [df_a, df_b, df_c]
+                dflines[i] = splitlist
+            else:
+                dfpage1 = dfline.iloc[:15]
+                dfpage1 = dfline.iloc[15:]
+                # cont later
+        else:
+            dflines[i] = [dfline]
+    return dflines
+
+
 def add_image(shape, idlist):
     print('idlist ', idlist)
 
@@ -209,167 +229,74 @@ sl_title, sh_title = add_slide(prs, title_slide_layout, "TITLE")
 
 for i, data_df in enumerate(data_df_list):
     data_df = reindex_column(data_df)
-    id_df_list[i] = reindex_column(id_df_list[i])
+    id_df = reindex_column(id_df_list[i])
     # sheet = df_tolist(data_df)
     rowcount, columncount = data_df.shape
-    print("\nCASE %d" % i)
-    print(data_df)
+
     collen_srs = data_df.count()  # contains length of each column
     collen_srs.reset_index(drop=True)
-    print("columnlengthsrs: \n{}".format(collen_srs))
     idx_max = int(collen_srs.idxmax())  # which line is the longest
-    print("idx max = ", idx_max)
+    print("\nCASE {}\n".format(i), data_df,
+          "\ncolumnlengthsrs: \n{}".format(collen_srs),
+          "\nidx max = ", idx_max)
     # longestcolumn = collen_srs[idx_max]  # how long is the line
 
     columnlenlist = []
     for j in collen_srs:
         columnlenlist.append(j)
 
-    if(idx_max == 1):
-        d1, d2, d3 = columnlenlist
-        df1 = data_df.iloc[:, 0].dropna(how='all')
-        df2 = data_df.iloc[:, 1].dropna(how='all')
-        df3 = data_df.iloc[:, 2].dropna(how='all')
-        priority_dict = {0: df1, 1: df2, 2: df3}
-        # print("indexes: {}, {}, {}".format(1, 2, 3))
-        for pd in priority_dict:
-            dfpd = priority_dict[pd]
-            collen = len(dfpd)
-            if collen > 5:
-                if collen <= 9:
-                    dfa, dfb = splitBelow9Rows(dfpd, collen)
-                    splitlist = [dfa, dfb]
-                    priority_dict[pd] = splitlist
-                else:
-                    if collen <= 15:
-                        dfa, dfb, dfc = splitBelow15Rows(dfpd, collen)
-                        splitlist = [dfa, dfb, dfc]
-                        priority_dict[pd] = splitlist
-                    else:
-                        # data is bigger than 15, need to split to 2
-                        dfpage1 = dfpd.iloc[:15]
-                        dfpage2 = dfpd.iloc[15:]
-                        pass
-            else:
-                priority_dict[pd] = [dfpd]
-        # print(priority_dict)
+    dflines = [data_df.loc[:, colname].dropna(
+        how='all') for colname, column in data_df.iteritems()]
+    idlines = [id_df.loc[:, colname].dropna(
+        how='all') for colname, column in id_df.iteritems()]
 
-        # repeat the same as idxmax 0 or 2
-    else:
-        if(columnlenlist[0] == columnlenlist[2]):
-            indexfirst, indexsecond, indexthird = 1, 2, 0
-        elif(columnlenlist[0] == columnlenlist[1]):
-            indexfirst, indexsecond, indexthird = 2, 1, 0
-        else:
-            if(idx_max == 0):  # 0
-                d1, d2 = columnlenlist[1], columnlenlist[2]
-            elif(idx_max == 2):
-                d1, d2 = columnlenlist[0], columnlenlist[1]
-            dofirst = min(d1, d2)  # length of shortest column
-            dosecond = max(d1, d2)  # length of mid column
-            dothird = columnlenlist[idx_max]
-
-            indexfirst = columnlenlist.index(dofirst)  # index of shortest
-            indexsecond = columnlenlist.index(dosecond)  # index of mid
-            indexthird = columnlenlist.index(dothird)  # index of longest
-            if(indexsecond == indexfirst):
-                for i, cl in enumerate(columnlenlist):
-                    if not(i == idx_max or i == columnlenlist.index(dofirst)):
-                        indexsecond = i
-
-        # print("indexes: {}, {}, {}".format(
-        #     indexfirst, indexsecond, indexthird))
-
-        hold_df = data_df.iloc[:, indexthird].dropna(how='all')
-        df1 = data_df.iloc[:, indexfirst].dropna(how='all')
-        df2 = data_df.iloc[:, indexsecond].dropna(how='all')
-
-        priority_dict = {indexfirst: df1,
-                         indexsecond: df2,
-                         indexthird: hold_df}
-        priority_id = [indexfirst, indexsecond, indexthird]
-
-        for pd in priority_dict:
-            # print("pd: {}".format(pd))
-            collen = len(priority_dict[pd])
-            dfpd = priority_dict[pd]
-            if collen > 5:
-                # print("panjang")
-                # process split the column into 2 rows here
-                if collen <= 9:
-                    dfa, dfb = splitBelow9Rows(dfpd, collen)
-                    splitlist = [dfa, dfb]
-                    priority_dict[pd] = splitlist
-                else:
-                    if collen <= 15:
-                        dfa, dfb, dfc = splitBelow15Rows(dfpd, collen)
-                        splitlist = [dfa, dfb, dfc]
-                        priority_dict[pd] = splitlist
-                    else:
-                        if(collen <= 30):
-                            # rare case
-                            dfpage1 = dfpd.iloc[:15]
-                            dfpage2 = dfpd.iloc[15:]
-                            # print(dfa, "\n", dfb)
-                            dfa, dfb, dfc = splitBelow15Rows(
-                                dfpage1, len(dfpage1))
-                            splitlist = [dfa, dfb, dfc]
-                            if(len(dfpage2) <= 9):
-                                dfd, dfe = splitBelow9Rows(
-                                    dfpage2, len(dfpage2))
-                                splitlist.extend((dfd, dfe))
-                            else:
-                                dfd, dfe, dff = splitBelow15Rows(
-                                    dfpage2, len(dfpage2))
-                                splitlist.extend((dfd, dfe, dff))
-                            priority_dict[pd] = splitlist
-                        else:
-                            print("Too much")
-                            # dfa do the collen <= 15
-                            # dfb do the collen <= 9
-            else:
-                priority_dict[pd] = [dfpd]
-
-    # all series
-    li1, li2, li3 = priority_dict[0], priority_dict[1], priority_dict[2]
-    df_list = [li1, li2, li3]
+    dflines = manage_dfline(dflines)
+    idlines = manage_dfline(idlines)
+    # print('idlines:\n', idlines)
+    li1, li2, li3 = dflines
     print(len(li1), len(li2), len(li3))
     if idx_max == 0:
         if len(li2) + len(li3) <= 4:
             if len(li2) + len(li3) + len(li1) <= 4:
-                pagelist = page_3in1(df_list)
+                pagelist = page_3in1(dflines)
+                imagelist = page_3in1(idlines)
             else:
-                pagelist = page_separate1(df_list)
+                pagelist = page_separate1(dflines)
+                imagelist = page_separate1(idlines)
         else:
             if len(li1) + len(li2) <= 4:
-                pagelist = page_separate3(df_list)
+                pagelist = page_separate3(dflines)
+                imagelist = page_separate3(idlines)
             else:
-                pagelist = page_separate123(df_list)
+                pagelist = page_separate123(dflines)
+                imagelist = page_separate123(idlines)
     elif idx_max == 1:
         if len(li1) + len(li2) <= 4:
             if len(li1) + len(li2) + len(li3) <= 4:
-                pagelist = page_3in1(df_list)
+                pagelist = page_3in1(dflines)
             else:
-                pagelist = page_separate3(df_list)
+                pagelist = page_separate3(dflines)
         else:
             if len(li2) + len(li3) <= 4:
-                pagelist = page_separate1(df_list)
+                pagelist = page_separate1(dflines)
             else:
-                pagelist = page_separate123(df_list)
+                pagelist = page_separate123(dflines)
     elif idx_max == 2:
         if len(li1) + len(li2) <= 4:
             if len(li1) + len(li2) + len(li3) <= 4:
-                pagelist = page_3in1(df_list)
+                pagelist = page_3in1(dflines)
             else:
-                pagelist = page_separate3(df_list)
+                pagelist = page_separate3(dflines)
         else:
             if len(li2) + len(li3) <= 4:
-                pagelist = page_separate1(df_list)
+                pagelist = page_separate1(dflines)
             else:
-                pagelist = page_separate123(df_list)
+                pagelist = page_separate123(dflines)
     for page in pagelist:
         slide, shape = add_slide(prs, title_content_layout, sheetname_list[i])
         make_table(slide, page, 10)
-        add_image(shape, id_df_list[i])
+    for imageid in imagelist:
+        print(imageid)
+        # add_image(shape, id_df_list[i])
 
-prs.save("first.pptx")
+prs.save("first_v4.pptx")
