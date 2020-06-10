@@ -34,7 +34,6 @@ def merge_database(df_zh, df_zp):
         #     lambda row: row['a']*row['b'] if pd.isnull(row['c']) else row['c'], axis=1)
         print(3)
         drop_column = [cl[1] for cl in compare_list].append(JG_cl[1])
-        #
         for drop in drop_column:
             df_merge = df_merge.drop(drop, axis=1)
         print(4)

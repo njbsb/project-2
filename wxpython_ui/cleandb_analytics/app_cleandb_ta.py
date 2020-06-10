@@ -434,8 +434,6 @@ class frame_ta (wx.Frame):
                         # self.checkbox_zpdev.Disable()
                         zh_df = pd.read_excel(self.zhpla_inputpath)
                         zp_df = pd.read_excel(self.zpdev_inputpath)
-                        # print(zh_df.columns)
-                        # print(zp_df.columns)
                         zh_df, zp_df = combinedb.prepareDataframe(zh_df, zp_df)
                         ta_df = combinedb.merge_database(zh_df, zp_df)
                         ta_df.to_excel(self.analytics_outputpath, index=False)
@@ -474,11 +472,6 @@ class frame_ta (wx.Frame):
             endtime = time.time()
             totalseconds = int(endtime - starttime)
             str_time = time_elapsed(totalseconds)
-            # totaltime = str(time.strftime(
-            #     "%H:%M:%S", time.gmtime(totalseconds)))
-            # timeHR = totaltime[0:2]
-            # timeMT = totaltime[3:5]
-            # timeSC = totaltime[6:]
             self.txt_time_elapsed.SetLabelText(
                 'Time elapsed: ' + str_time)
         else:
