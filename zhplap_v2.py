@@ -1,5 +1,7 @@
 import pandas as pd
 import os
+import time
+import datetime
 
 
 def reindex_column(df):
@@ -142,17 +144,41 @@ def addcolumn_superior(df):
 
 
 def arrange_column(df):
-    col_order = ['Staff No', 'Staff Name', 'SG', 'Lvl', 'Tier', 'JG', 'Est.JG', 'EQV JG', 'OLIVE JG', 'Pos ID', 'Pos SUM', 'Superior Pos ID', 'Superior ID', 'Superior Name', 'Position', 'Sec ID', 'Section', 'Dept ID', 'Department', 'Division ID', 'Division', 'Sector ID', 'Sector', 'Comp. ID Position', 'Comp. Position', 'Buss ID', 'Business', 'C.Center', 'Gender', 'Race', 'Zone', 'Home SKG', 'Pos.SKG', 'JobID(C)', 'Level', 'NE Area', 'Loc ID', 'Location Text', 'Vac Date', 'Start Date', 'End Date', 'Vacancy Status', 'Email Address', 'Mirror Pos ID', 'Mirror Position', 'EG Post. ID', 'EG Position', 'ESG Post. ID', 'ESG Position', 'PT1', 'PT2', 'Overseas Staff No', 'Overseas Staff Name', 'Overseas Staff Comp. ID', 'Overseas Staff Comp.', 'Staff Comp. ID', 'Staff Comp.', 'Staff EG ID', 'Staff EG', 'Staff ESG ID', 'Staff ESG', 'Staff Work Contract ID', 'Staff Work Contract'
+    col_order = ['Staff No', 'Staff Name', 'SG', 'Lvl', 'Tier', 'JG', 'Est.JG', 'EQV JG', 'Conso JG', 'OLIVE JG', 'Pos ID', 'Pos SUM', 'Superior Pos ID', 'Superior ID', 'Superior Name', 'Position', 'Sec ID', 'Section', 'Dept ID', 'Department', 'Division ID', 'Division', 'Sector ID', 'Sector', 'Comp. ID Position', 'Comp. Position', 'Buss ID', 'Business', 'C.Center', 'Gender', 'Race', 'Zone', 'Home SKG', 'Pos.SKG', 'JobID(C)', 'Level', 'NE Area', 'Loc ID', 'Location Text', 'Vac Date', 'Start Date', 'End Date', 'Vacancy Status', 'Email Address', 'Mirror Pos ID', 'Mirror Position', 'EG Post. ID', 'EG Position', 'ESG Post. ID', 'ESG Position', 'PT1', 'PT2', 'Overseas Staff No', 'Overseas Staff Name', 'Overseas Staff Comp. ID', 'Overseas Staff Comp.', 'Staff Comp. ID', 'Staff Comp.', 'Staff EG ID', 'Staff EG', 'Staff ESG ID', 'Staff ESG', 'Staff Work Contract ID', 'Staff Work Contract'
                  ]
-    colname_date = ['End Date', 'Vac Date', 'Start Date']
-    for colname, column in df.iteritems():
-        if colname in colname_date:
-            for i, row in column.iteritems():
-                df.loc[i, colname] = row.replace('.', '/')
-        elif colname == 'Email Address':
-            for i, row in column.iteritems():
-                df.loc[i, colname] = row.lower()
+    # colname_date = ['End Date', 'Vac Date', 'Start Date']
+    # for colname, column in df.iteritems():
+    #     if colname in colname_date:
+    #         for i, row in column.iteritems():
+    #             df.loc[i, colname] = row.replace('.', '/')
+    #     elif colname == 'Email Address':
+    #         for i, row in column.iteritems():
+    #             df.loc[i, colname] = row.lower()
     df = df.reindex(columns=col_order)
+    return df
+
+
+def addcolumn_consoJG(df):
+    column_consoJG = []
+    jg_columns = ['JG', 'Est.JG', 'EQV JG']
+
+    for i, row in df.iterrows():
+        jg = df.loc[i, 'JG']
+        estjg = df.loc[i, 'Est.JG']
+        eqvjg = df.loc[i, 'EQV JG']
+        if not jg == '':
+            column_consoJG.append(str(jg))
+        else:
+            if not estjg == '':
+                column_consoJG.append('Est. ' + str(estjg))
+            else:
+                if not eqvjg == '-':
+                    column_consoJG.append('Eqv. ' + str(eqvjg))
+                else:
+                    column_consoJG.append('No JG')
+
+    # print(column_consoJG, len(column_consoJG))
+    df['Conso JG'] = column_consoJG
     return df
 
 
@@ -169,20 +195,22 @@ def format_zhpla(df):
     df = set_header(df, list_colname)  # for easy processing
     df = addcolumn_possum(df)
     df = addcolumn_superior(df)
+    df = addcolumn_consoJG(df)
+    print('arranging columns.')
     df = arrange_column(df)
     return df
 
 
 def set_input_output(opt):
-    input_path = r'D:\Documents\Python\project-2\database\input\zhpla-may2020.xlsx' if opt == '1' else r'D:\Documents\Python\project-2\database\input\zhplac.xlsx'
-    output_path = r'D:\Documents\Python\project-2\database\output\zh_full.xlsx' if opt == '1' else r'D:\Documents\Python\project-2\database\output\zh_partial.xlsx'
+    input_path = r'D:\Documents\Python\project-2\database\input\ZHPLA_June2020.xlsx' if opt == '1' else r'D:\Documents\Python\project-2\database\input\zhplac.xlsx'
+    output_path = r'D:\Documents\Python\project-2\database\output\zh_full_june.xlsx' if opt == '1' else r'D:\Documents\Python\project-2\database\output\zh_partial.xlsx'
     return input_path, output_path
 
 
 mainpath = os.getcwd()
 opt = input('1. Full ZH\n2. Partial ZH\nAnswer: ')
 input_path, output_path = set_input_output(opt)
-
+starttime = time.time()
 rawdf = pd.read_excel(input_path, skiprows=4, nrows=None)
 clean_df = clean_rawdf(rawdf)
 finaldf = format_zhpla(clean_df)
@@ -190,5 +218,8 @@ finaldf = format_zhpla(clean_df)
 print(finaldf)
 print("Writing to excel...")
 finaldf.to_excel(output_path, index=None)
+endtime = time.time()
+totaltime = int(endtime - starttime)
+print('time elapsed: ', str(datetime.timedelta(seconds=totaltime)))
 # bigdf.to_csv('bigdf2.csv', index=None)
 print("DONE")

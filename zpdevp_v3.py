@@ -1,6 +1,7 @@
 import pandas as pd
 import os
 import datetime
+import time
 
 
 def reindex_column(df):
@@ -107,10 +108,12 @@ def addcolumn_ppa5yrs(df):
         text_ppa5yrs = ''
         for j, year in enumerate(ppa5yrs_col):
             ppa = df.loc[i, year]
-            if not ppa == '' or type(ppa) is float:
+            if not ppa == '' or not type(ppa) is float:
                 if not j == len(ppa5yrs_col) - 1:
                     ppa = str(ppa) + ', '
                 text_ppa5yrs += str(ppa)
+            else:
+                text_ppa5yrs = ''
         column_ppa.append(text_ppa5yrs)
     df['PPA'] = column_ppa
     return df
@@ -121,11 +124,14 @@ def addcolumn_SGym(df):
     for i, column in df.iteritems():
         if i == 'SG Since':
             for j, row in column.iteritems():
-                separator = row.find(';')
-                sg_date = row[:separator-1]
-                sg_ym = row[separator+1:]
-                df.loc[j, 'SG Since'] = sg_date
-                column_sgym.append(sg_ym)
+                if type(row) is str:
+                    separator = row.find(';')
+                    sg_date = row[:separator-1]
+                    sg_ym = row[separator+1:]
+                    df.loc[j, 'SG Since'] = sg_date
+                    column_sgym.append(sg_ym)
+                else:
+                    column_sgym.append('')
     df['SG (YM)'] = column_sgym
     return df
 
@@ -133,12 +139,12 @@ def addcolumn_SGym(df):
 def arrange_renameCol(df):
     column_date = ['Date of Birth', 'Join Dept',
                    'SG Since', 'Date Post', 'Join Div.', 'Join Comp.']
-    for colname, column in df.iteritems():
-        if colname in column_date:
-            for i, row in column.iteritems():
-                if not type(row) is float:
-                    row = row.replace('.', '/')
-                    df.loc[i, colname] = row
+    # for colname, column in df.iteritems():
+    #     if colname in column_date:
+    #         for i, row in column.iteritems():
+    #             if not type(row) is float:
+    #                 row = row.replace('.', '/')
+    #                 df.loc[i, colname] = row
     df.rename(columns={'Personnel Number': 'Staff Number',
                        'Formatted Name of Employee or Applicant': 'Staff Name',
                        'Gender Key Desc': 'Gender', 'Sal. Grade': 'SG', 'Job Grade': 'JG',
@@ -147,7 +153,7 @@ def arrange_renameCol(df):
     column_order = ['Staff Number', 'Staff Name', 'Gender', 'Age', 'SG', 'Lvl', 'JG', 'PPA-19', 'PPA-18', 'PPA-17', 'PPA-16', 'PPA-15', 'PPA',
                     'Date of Birth', 'Country of Birth', 'Country of Birth Desc', 'State', 'State Desc', 'Birthplace', 'Nationality', 'Nationality Desc', 'Position',
                     'Section', 'Department', 'Division', 'Sector', 'Company', 'SG Since', 'SG (YM)', 'Date in PETRONAS', 'Date in Position', 'Date in Department', 'Date in Division',
-                    'Date in Company', 'Pos. SKG', 'Home SKG', 'Work Center', 'Religious Denomination Key', 'Religious Denomination Key Desc']
+                    'Date in Company', 'Pos. SKG', 'Home SKG', 'Work Center', 'Task Type', 'Task Type Desc', 'Date of Task']
     df = df[column_order]
     return df
 
@@ -156,14 +162,17 @@ def addcolumn_age(df):
     today = datetime.date.today()
     format_str = '%d/%m/%Y'
     column_age = []
+    import math
     for i, row in df['Date of Birth'].iteritems():
-        if not row == float('nan'):
+        # print(row)
+        # row == float('nan') or not pd.isnull(row) or
+        if not type(row) is float and '.' in row:
             row = row.replace('.', '/')
             dob = datetime.datetime.strptime(row, format_str)
             age = today.year - dob.year - \
                 ((today.month, today.day) < (dob.month, dob.day))
         else:
-            age = 0
+            age = ''
         column_age.append(age)
     df['Age'] = column_age
     return df
@@ -174,12 +183,12 @@ def clean_rawdf(df):
     dflist = slicebigdf(df)
     dflist = adjustalldf(dflist)
     cleandf = pd.concat(dflist).reset_index(drop=True)
-    # bigdf.to_csv("zpdev_before.csv", index=None)
     return cleandf
 
 
 def format_zpdev(bigdf):
     list_colname = [colname[0] for i, colname in bigdf.iteritems()]
+    print(list_colname)
     bigdf = set_header(bigdf, list_colname)  # done
     bigdf = addcolumn_ppa5yrs(bigdf)  # done
     bigdf = addcolumn_SGym(bigdf)
@@ -189,8 +198,8 @@ def format_zpdev(bigdf):
 
 
 def set_input_output(opt):
-    input_path = r'D:\Documents\Python\project-2\database\input\zpdev-may2020.xlsx' if opt == '1' else r'D:\Documents\Python\project-2\database\input\zpdevc.xlsx'
-    output_path = r'D:\Documents\Python\project-2\database\output\zp_full.xlsx' if opt == '1' else r'D:\Documents\Python\project-2\database\output\zp_partial.xlsx'
+    input_path = r'D:\Documents\Python\project-2\database\input\raw_zpdev_june2020.xlsx' if opt == '1' else r'D:\Documents\Python\project-2\database\input\zpdevc.xlsx'
+    output_path = r'D:\Documents\Python\project-2\database\output\zp_full_june.xlsx' if opt == '1' else r'D:\Documents\Python\project-2\database\output\zp_partial.xlsx'
     return input_path, output_path
 
 
@@ -198,15 +207,18 @@ mainpath = os.getcwd()
 opt = input('1. Full ZP\n2. Partial ZP\nAnswer: ')
 
 input_path, output_path = set_input_output(opt)
-
+starttime = time.time()
 df = pd.read_excel(input_path, skiprows=4, nrows=None)
 
 cleandf = clean_rawdf(df)
 
 finaldf = format_zpdev(cleandf)
 
-print(finaldf)
+# print(finaldf)
 print("Writing to excel...")
-finaldf.to_excel(output_path, index=None, header=None)
+finaldf.to_excel(output_path, index=None)
+endtime = time.time()
+totaltime = int(endtime - starttime)
+print('time elapsed: ', str(datetime.timedelta(seconds=totaltime)))
 # bigdf.to_csv("zpdev_after.csv", index=None)
 print("DONE")
