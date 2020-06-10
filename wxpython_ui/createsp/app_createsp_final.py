@@ -164,38 +164,53 @@ class mainframe (wx.Frame):
                 print(mediafolderpath)
 
             try:
-                self.txt_message.SetLabelText('Getting data from file...')
-                filename, sheetname_list = cs.getFileInfo(filepath)
-                data_df_list, id_df_list = cs.get_rawDataframe(
-                    filepath, sheetname_list)
-                self.txt_message.SetLabelText('Writing into pptx file...')
-                prs = cs.Presentation()
-                cs.createPPT_data(data_df_list, id_df_list, prs,
-                                  sheetname_list, mediafolderpath)
-                sp_filename = filename + '.pptx'
-                outputfile = os.path.join(maindirectory, sp_filename)
-                prs.save(outputfile)
-                if self.chbox_autoopen.IsChecked():
-                    os.startfile(outputfile)
-                self.btn_openfolder.Enable()
-                self.txt_message.SetLabelText(
-                    'SP Pack successfully generated.')
+                # self.txt_message.SetLabelText('Getting data from file...')
+                try:
+                    filename, sheetname_list = cs.getFileInfo(filepath)
+                    data_df_list, id_df_list = cs.get_rawDataframe(
+                        filepath, sheetname_list)
+                    try:
+                        self.txt_message.SetLabelText(
+                            'Writing into pptx file...')
+                        prs = cs.Presentation()
+                        cs.createPPT_data(data_df_list, id_df_list, prs,
+                                          sheetname_list, mediafolderpath)
+                        try:
+                            self.txt_message.SetLabelText('Saving the pack...')
+                            sp_filename = filename + '.pptx'
+                            outputfile = os.path.join(
+                                maindirectory, sp_filename)
+                            prs.save(outputfile)
+                            if self.chbox_autoopen.IsChecked():
+                                os.startfile(outputfile)
+                                self.btn_openfolder.Enable()
+                                self.txt_message.SetLabelText(
+                                    'SP Pack successfully generated.')
+                        except Exception as e:
+                            self.txt_message.SetLabelText(
+                                'Saving failed. Please check.')
+                    except Exception as e:
+                        self.txt_message.SetLabelText(
+                            'Error while writing the data. Please check the data format')
+                except Exception as e:
+                    self.txt_message.SetLabelText(
+                        'Error while reading the file. Please check the data format.')
             except Exception as e:
                 exc_type, exc_obj, exc_tb = sys.exc_info()
                 fname = os.path.split(
                     exc_tb.tb_frame.f_code.co_filename)[1]
                 print('Error')
                 print(exc_type, fname, exc_tb.tb_lineno)
-                self.txt_message.SetLabelText(e)
+                self.txt_message.SetLabelText(str(e))
             finally:
                 self.btn_generate.Enable()
                 self.m_filePicker1.Enable()
                 self.m_dirPicker1.Enable()
                 self.chbox_autoopen.Enable()
                 self.chbox_autoopen.SetValue(False)
-
         else:
-            self.txt_message.SetLabelText('No SP Excel file were picked!')
+            self.txt_message.SetLabelText(
+                'No file selected. Please select one SP Excel file.')
 
     def openOutputFolder(self, event):
         os.startfile(maindirectory)
