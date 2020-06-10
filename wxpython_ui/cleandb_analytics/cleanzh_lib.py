@@ -165,7 +165,6 @@ def arrange_column(df):
 def addcolumn_consoJG(df):
     column_consoJG = []
     jg_columns = ['JG', 'Est.JG', 'EQV JG']
-
     for i, row in df.iterrows():
         jg = df.loc[i, 'JG']
         estjg = df.loc[i, 'Est.JG']
@@ -180,7 +179,6 @@ def addcolumn_consoJG(df):
                     column_consoJG.append('Eqv. ' + str(eqvjg))
                 else:
                     column_consoJG.append('No JG')
-    # print(column_consoJG, len(column_consoJG))
     df['Conso JG'] = column_consoJG
     return df
 
