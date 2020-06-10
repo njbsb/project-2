@@ -297,7 +297,7 @@ class frame_ta (wx.Frame):
             self.btn_selectzhpla.Enable()
 
     def selectZhpla(self, event):
-        dlg = wx.FileDialog(self, message="Choose a file (zhpla)", defaultDir=self.currentDirectory,
+        dlg = wx.FileDialog(self, message="Choose a file (ZHPLA)", defaultDir=self.currentDirectory,
                             defaultFile="", wildcard=wildcard, style=wx.FD_OPEN | wx.FD_CHANGE_DIR)
         if dlg.ShowModal() == wx.ID_OK:
             paths = dlg.GetPaths()
@@ -318,7 +318,7 @@ class frame_ta (wx.Frame):
             self.btn_selectzpdev.Enable()
 
     def selectZpdev(self, event):
-        dlg = wx.FileDialog(self, message="Choose a file (zpdev)", defaultDir=self.currentDirectory,
+        dlg = wx.FileDialog(self, message="Choose a file (ZPDEV)", defaultDir=self.currentDirectory,
                             defaultFile="", wildcard=wildcard, style=wx.FD_OPEN | wx.FD_CHANGE_DIR)
         if dlg.ShowModal() == wx.ID_OK:
             paths = dlg.GetPaths()
@@ -410,6 +410,8 @@ class frame_ta (wx.Frame):
                                 self.btn_openzpdev.Enable()
                     except Exception as e:
                         self.txt_message.SetLabelText(str(e))
+                    else:
+                        self.btn_openoutputdir.Enable()
                     finally:
                         self.checkbox_zhpla.SetValue(False)
                         self.checkbox_zpdev.SetValue(False)
@@ -448,6 +450,9 @@ class frame_ta (wx.Frame):
                         self.checkbox_zhpla.SetValue(False)
                         self.checkbox_zpdev.SetValue(False)
                         self.rdbtn_combine.SetValue(False)
+                    else:
+                        self.btn_openoutputdir.Enable()
+                        self.btn_openta.Enable()
                     finally:
                         self.checkbox_zhpla.Enable()
                         self.checkbox_zpdev.Enable()
