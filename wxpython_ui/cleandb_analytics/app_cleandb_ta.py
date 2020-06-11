@@ -22,8 +22,8 @@ from datetime import datetime
 ###########################################################################
 wildcard = "Excel File (*.xlsx)|*.xlsx|" \
     "All files (*.*)|*.*"
-currentMonth = datetime.now().strftime('%B')
-delaytime = 1
+currentMonth = str(datetime.now().strftime('%B')).upper()
+# delaytime = 1
 zh_columns = ['Pos ID', 'End Date', 'Position', 'Vacancy Status', 'Email Address', 'Mirror Pos ID', 'Mirror Position', 'Superior Pos ID', 'Sec ID', 'Section', 'Dept ID', 'Department', 'Division ID', 'Division', 'Sector ID', 'Sector', 'Comp. ID Position', 'Comp. Position', 'Buss ID', 'Business', 'C.Center', 'EG Post. ID', 'EG Position', 'ESG Post. ID', 'ESG Position', 'PT1', 'PT2', 'Staff No', 'Staff Name',
               'Overseas Staff No', 'Overseas Staff Name', 'Overseas Staff Comp. ID', 'Overseas Staff Comp.', 'Staff Comp. ID', 'Staff Comp.', 'Staff EG ID', 'Staff EG', 'Staff ESG ID', 'Staff ESG', 'Staff Work Contract ID', 'Staff Work Contract', 'Gender', 'Race', 'SG', 'Lvl', 'Tier', 'JG', 'Est.JG', 'EQV JG', 'OLIVE JG', 'Zone', 'Home SKG', 'Pos.SKG', 'JobID(C)', 'Level', 'NE Area', 'Loc ID', 'Location Text', 'Vac Date', 'Start Date']
 zp_columns = ['Personnel Number', 'Formatted Name of Employee or Applicant', 'Gender Key', 'Gender Key Desc', 'Date of Birth', 'Country of Birth', 'Country of Birth Desc', 'State', 'State Desc', 'Birthplace', 'Nationality', 'Nationality Desc', 'Join Date', 'Join Dept', 'Sal. Grade', 'Lvl', 'Job Grade',
@@ -108,7 +108,7 @@ class frame_ta (wx.Frame):
         layout_input.Add(self.btn_selectzhpla, 0, wx.ALL, 5)
 
         self.txt_zhplafile = wx.StaticText(layout_input.GetStaticBox(
-        ), wx.ID_ANY, u"zhplafile.xls", wx.DefaultPosition, wx.DefaultSize, 0)
+        ), wx.ID_ANY, u"zhpla_file.xlsx", wx.DefaultPosition, wx.DefaultSize, 0)
         self.txt_zhplafile.Wrap(-1)
 
         layout_input.Add(self.txt_zhplafile, 0, wx.ALL, 5)
@@ -135,7 +135,7 @@ class frame_ta (wx.Frame):
         layout_input.Add(self.btn_selectzpdev, 0, wx.ALL, 5)
 
         self.txt_zpdevfile = wx.StaticText(layout_input.GetStaticBox(
-        ), wx.ID_ANY, u"zpdevfile.xls", wx.DefaultPosition, wx.DefaultSize, 0)
+        ), wx.ID_ANY, u"zpdev_file.xlsx", wx.DefaultPosition, wx.DefaultSize, 0)
         self.txt_zpdevfile.Wrap(-1)
 
         layout_input.Add(self.txt_zpdevfile, 0, wx.ALL, 5)
@@ -221,7 +221,7 @@ class frame_ta (wx.Frame):
         b_layout_h.Add(b_layout_p1, 1, wx.EXPAND, 5)
 
         self.txt_message = wx.StaticText(
-            self, wx.ID_ANY, u"message here", wx.DefaultPosition, wx.DefaultSize, 0)
+            self, wx.ID_ANY, u"", wx.DefaultPosition, wx.DefaultSize, 0)
         self.txt_message.Wrap(-1)
 
         self.txt_message.SetForegroundColour(
@@ -273,15 +273,23 @@ class frame_ta (wx.Frame):
         self.rdbtn_cleancombine.Disable()
         # self.rdbtn_cleancombine.Disable()
         # self.rdbtn_combine.Disable()
+        self.txt_time_elapsed.SetLabelText(
+            'Current time: '+str(datetime.now().strftime("%H:%M")))
 
         # Common variable
-        self.currentDirectory = os.getcwd()
+        self.currentDirectory = os.path.dirname(__file__)
         self.zhpla_inputpath = ''
         self.zpdev_inputpath = ''
-        self.zhpla_outputpath = 'ZHPLA_' + currentMonth + '.xlsx'
-        self.zpdev_outputpath = 'ZPDEV_' + currentMonth + '.xlsx'
-        self.analytics_outputpath = 'TALENT_ANALYTICS_' + currentMonth + '.xlsx'
-        self.zh_df = None
+        zhpla_outfile = 'ZHPLA_' + currentMonth + '.xlsx'
+        zpdev_outfile = 'ZPDEV_' + currentMonth + '.xlsx'
+        analyt_outfile = 'TALENT_ANALYTICS_' + currentMonth + '.xlsx'
+
+        self.zhpla_outputpath = os.path.join(
+            self.currentDirectory, zhpla_outfile)
+        self.zpdev_outputpath = os.path.join(
+            self.currentDirectory, zpdev_outfile)
+        self.analytics_outputpath = os.path.join(
+            self.currentDirectory, analyt_outfile)
 
     def __del__(self):
         pass
@@ -431,7 +439,9 @@ class frame_ta (wx.Frame):
             elif actiontypetext == 'Combine':
                 if not self.zhpla_inputpath == '' and not self.zpdev_inputpath == '':
                     try:
-                        # self.btn_run.Disable()
+                        print('Combining the databases')
+                        self.txt_message.SetLabelText('Running...')
+                        self.btn_run.Disable()
                         # self.checkbox_zhpla.Disable()
                         # self.checkbox_zpdev.Disable()
                         zh_df = pd.read_excel(self.zhpla_inputpath)

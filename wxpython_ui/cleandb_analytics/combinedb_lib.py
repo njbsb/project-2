@@ -17,7 +17,7 @@ def merge_database(df_zh, df_zp):
         print('merging databases')
         mergeOn = ['Staff No', 'Staff Name']
         df_merge = pd.merge(df_zh, df_zp, on=mergeOn, how='outer')
-        print(1)
+        # print(1)
         compare_list = [['SG_x', 'SG_y'], ['Lvl_x', 'Lvl_y'], ['Position_x', 'Position_y'], ['Section_x', 'Section_y'], [
             'Department_x', 'Department_y'], ['Division_x', 'Division_y'], ['Sector_x', 'Sector_y'], ['Gender_x', 'Gender_y']]
         for cl in compare_list:
@@ -26,28 +26,28 @@ def merge_database(df_zh, df_zp):
             xcolumn = cl[0]
             if(xcolumn[-2:] == '_x'):
                 df_merge.rename(columns={xcolumn: xcolumn[:-2]}, inplace=True)
-        print(2)
+        # print(2)
         JG_cl = ['Conso JG', 'JG']
         df_merge[JG_cl[0]] = df_merge.apply(lambda row: row[JG_cl[1]] if pd.isnull(
             row[JG_cl[0]]) or row[JG_cl[0]] == 'No JG' else row[JG_cl[0]], axis=1)
         # df_merge['c'] = df_merge.apply(
         #     lambda row: row['a']*row['b'] if pd.isnull(row['c']) else row['c'], axis=1)
-        print(3)
-        drop_column = [cl[1] for cl in compare_list].append(JG_cl[1])
+        # print(3)
+        drop_column = [cl[1] for cl in compare_list]
+        drop_column.append(JG_cl[1])
         for drop in drop_column:
             df_merge = df_merge.drop(drop, axis=1)
-        print(4)
-        arrangedcol = ['Staff No', 'Staff Name', 'Gender', 'Race', 'Age', 'SG', 'Lvl', 'Tier', 'Conso JG', 'JG', 'Pos ID', 'Pos SUM', 'Superior Pos ID', 'Superior ID', 'Superior Name', 'SG Since', 'SG (YM)', 'YiPETRONAS', 'YiPosition', 'PPA-19', 'PPA-18', 'PPA-17', 'PPA-16', 'PPA-15', 'PPA', 'Date in PETRONAS', 'Date in Position', 'Date in Department', 'Date in Division', 'Date in Company', 'Date of Birth', 'Country of Birth', 'Country of Birth Desc',
+        # print(4)
+        arrangedcol = ['Staff No', 'Staff Name', 'Gender', 'Race', 'Age', 'SG', 'Lvl', 'Tier', 'Conso JG', 'Pos ID', 'Pos SUM', 'Superior Pos ID', 'Superior ID', 'Superior Name', 'SG Since', 'SG (YM)', 'YiPETRONAS', 'YiPosition', 'PPA-19', 'PPA-18', 'PPA-17', 'PPA-16', 'PPA-15', 'PPA', 'Date in PETRONAS', 'Date in Position', 'Date in Department', 'Date in Division', 'Date in Company', 'Date of Birth', 'Country of Birth', 'Country of Birth Desc',
                        'State', 'State Desc', 'Birthplace', 'Nationality', 'Nationality Desc', 'Position', 'Sec ID', 'Section', 'Dept ID', 'Department', 'Division ID', 'Division', 'Sector ID', 'Sector', 'Comp. ID Position', 'Comp. Position', 'Buss ID', 'Business',
                        'C.Center', 'Home SKG', 'Pos.SKG', 'Pos. SKG Zpdev', 'Home SKG Zpdev', 'JobID(C)', 'Level', 'Loc ID', 'Location Text', 'Work Center', 'Email Address', 'Task Type', 'Task Type Desc', 'Retirement Date']
         dfm_col = list(df_merge.columns)
         check = all(item in dfm_col for item in arrangedcol)
         print('Check:', check)
 
-        set1 = set(dfm_col)
-        set2 = set(arrangedcol)
-        print('difference', str(set2.difference(set1)))
-
+        # set1 = set(dfm_col)
+        # set2 = set(arrangedcol)
+        # print('difference', str(set2.difference(set1)))
         try:
             df_merge = df_merge[arrangedcol]
         except Exception as e:
