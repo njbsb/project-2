@@ -25,7 +25,6 @@ class fr_downloader (wx.Frame):
     def __init__(self, parent):
         wx.Frame.__init__(self, parent, id=wx.ID_ANY, title=u"TTM: TE Downloader",
                           pos=wx.DefaultPosition, size=wx.Size(644, 350), style=wx.DEFAULT_FRAME_STYLE | wx.TAB_TRAVERSAL)
-
         self.SetSizeHints(wx.DefaultSize, wx.DefaultSize)
         self.SetBackgroundColour(wx.Colour(0, 177, 169))
 
@@ -63,7 +62,7 @@ class fr_downloader (wx.Frame):
         b_layout_ID.Add(self.m_staticText5, 0, wx.ALIGN_CENTER | wx.ALL, 5)
 
         self.btn_selectfile = wx.Button(b_layout_ID.GetStaticBox(
-        ), wx.ID_ANY, u"Select file...", wx.DefaultPosition, wx.DefaultSize, 0 | wx.NO_BORDER)
+        ), wx.ID_ANY, u"Select txt file...", wx.DefaultPosition, wx.DefaultSize, 0 | wx.NO_BORDER)
         self.btn_selectfile.SetForegroundColour(
             wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW))
         self.btn_selectfile.SetBackgroundColour(wx.Colour(36, 106, 115))
@@ -164,7 +163,7 @@ class fr_downloader (wx.Frame):
         self.file_link = ''
         self.mainpath = os.path.dirname(__file__)
         self.id_list = None
-        self.outputFolder = ''
+        self.outputFolder = self.mainpath
 
         # Connect Events
         self.btn_selectfile.Bind(wx.EVT_BUTTON, self.selectFile)
