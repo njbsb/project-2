@@ -29,10 +29,6 @@ def colnum_string(n):
     return string
 
 
-def getDate():
-    pass
-
-
 class fr_idToString (wx.Frame):
 
     def __init__(self, parent):
