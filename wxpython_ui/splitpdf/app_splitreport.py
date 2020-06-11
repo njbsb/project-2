@@ -182,6 +182,8 @@ class main_frame (wx.Frame):
 
         # Variables
         self.outputfolder = ''
+        self.btn_opendir.Disable()
+        self.btn_split.Disable()
 
     def __del__(self):
         pass
@@ -192,6 +194,10 @@ class main_frame (wx.Frame):
         print(filepath)
         filename = os.path.basename(filepath)
         self.label_filename.SetLabelText(str(filename))
+        if not filepath == '':
+            self.btn_split.Enable()
+        else:
+            self.btn_split.Disable()
 
     def splitFile(self, event):
         keywordlist = ['Assessee ID:', 'STAFF NO.:', 'Assessee ID:']
@@ -216,6 +222,10 @@ class main_frame (wx.Frame):
                     try:
                         splitPdf(object, report_type, pagelist,
                                  pagecount, self.outputfolder)
+                        self.text_status.SetLabelText('Status: successful')
+                        self.text_reportcount.SetLabelText(
+                            'Report count: ' + str(len(pagelist)))
+                        self.btn_opendir.Enable()
                     except Exception as e:
                         print(str(e))
                         self.text_status.SetLabelText(
@@ -234,7 +244,7 @@ class main_frame (wx.Frame):
                 self.cb_reporttype.Enable()
 
     def openDirectory(self, event):
-        event.Skip()
+        os.startfile(self.outputfolder)
 
 
 class MainApp(wx.App):
