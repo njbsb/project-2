@@ -270,6 +270,7 @@ def divide_pages(dflines, idx_max, typ):
 directory = os.getcwd()
 filepath = r'D:\Documents\Python\project-2\database\input\SP_GHRM.xlsx'
 ta_filepath = r'D:\Documents\Python\project-2\database\input\ta80000_save.xlsx'
+mediafolderpath = ''
 filename, sheetname_list = getFileInfo(filepath)
 
 data_df_list = []

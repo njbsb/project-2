@@ -118,6 +118,8 @@ elif opt == '2':
     df_zp = pd.read_excel(zpdev_path, sheet_name='Sheet1')
     filnam = "ta_3000.xlsx"
 starttime = datetime.now()
+print(df_zh)
+print(df_zp)
 df_zh, df_zp = prepareDataframe(df_zh, df_zp)
 df_ta = merge_database(df_zh, df_zp)
 df_ta.to_excel(filnam, index=False, header=True)
