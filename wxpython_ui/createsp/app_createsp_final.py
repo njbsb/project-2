@@ -12,7 +12,7 @@ import wx.xrc
 import createsp_lib_v5 as cs
 import os
 import sys
-maindirectory = os.getcwd()
+maindirectory = os.path.dirname(__file__)
 ###########################################################################
 # Class mainframe
 ###########################################################################
