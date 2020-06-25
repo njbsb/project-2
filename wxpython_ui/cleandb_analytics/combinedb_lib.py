@@ -38,17 +38,22 @@ def merge_database(df_zh, df_zp):
         for drop in drop_column:
             df_merge = df_merge.drop(drop, axis=1)
         # print(4)
-        arrangedcol = ['Staff No', 'Staff Name', 'Gender', 'Race', 'Age', 'SG', 'Lvl', 'Tier', 'Conso JG', 'Pos ID', 'Pos SUM', 'Superior Pos ID', 'Superior ID', 'Superior Name', 'SG Since', 'SG (YM)', 'YiPETRONAS', 'YiPosition', 'PPA-19', 'PPA-18', 'PPA-17', 'PPA-16', 'PPA-15', 'PPA', 'Date in PETRONAS', 'Date in Position', 'Date in Department', 'Date in Division', 'Date in Company', 'Date of Birth', 'Country of Birth', 'Country of Birth Desc',
+        arrangedcol = ['Staff No', 'Staff Name', 'Gender', 'Race', 'Age', 'SG', 'Lvl', 'Tier', 'Conso JG', 'Pos ID', 'Pos SUM', 'Superior Pos ID', 'Superior ID', 'Superior Name', 'SG Since', 'SG (YM)', 'YiPETRONAS', 'YiPosition',
+                       'PPA-19', 'PPA-18', 'PPA-17', 'PPA-16', 'PPA-15', 'PPA', 'Date in PETRONAS', 'Date in Position', 'Date in Department', 'Date in Division', 'Date in Company', 'Date of Birth', 'Country of Birth', 'Country of Birth Desc',
                        'State', 'State Desc', 'Birthplace', 'Nationality', 'Nationality Desc', 'Position', 'Sec ID', 'Section', 'Dept ID', 'Department', 'Division ID', 'Division', 'Sector ID', 'Sector', 'Comp. ID Position', 'Comp. Position', 'Buss ID', 'Business',
                        'C.Center', 'Home SKG', 'Pos.SKG', 'Pos. SKG Zpdev', 'Home SKG Zpdev', 'JobID(C)', 'Level', 'Loc ID', 'Location Text', 'Work Center', 'Email Address', 'Task Type', 'Task Type Desc', 'Retirement Date']
         dfm_col = list(df_merge.columns)
         check = all(item in dfm_col for item in arrangedcol)
         print('Check:', check)
+        for item in arrangedcol:
+            if item not in dfm_col:
+                print(item)
 
         # set1 = set(dfm_col)
         # set2 = set(arrangedcol)
         # print('difference', str(set2.difference(set1)))
         try:
+
             df_merge = df_merge[arrangedcol]
         except Exception as e:
             exc_type, exc_obj, exc_tb = sys.exc_info()
@@ -107,7 +112,10 @@ def prepareDataframe(df_zh, df_zp):
     df_zh = dropBadColumn(df_zh)
     df_zp = addYearColumn(df_zp)
     df_zp = df_zp.rename(columns={'Pos. SKG': 'Pos. SKG Zpdev',
-                                  'Home SKG': 'Home SKG Zpdev'})
+                                  'Home SKG': 'Home SKG Zpdev',
+                                  'Staff Number': 'Staff No',
+                                  'Date of Task': 'Retirement Date'
+                                  })
     print('renaming completed')
     return df_zh, df_zp
 
