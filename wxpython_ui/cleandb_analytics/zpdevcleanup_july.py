@@ -54,7 +54,7 @@ def getGroup(df):
     # list contain index of new group of data, detects 'zhpla report' from column 0/A
     listofindex = []
     for i, row in df.iterrows():
-        if type(row[0]) == str and row[0][:2] == 'HR':
+        if type(row[0]) == str and 'HR' in row[0]:
             listofindex.append(i)
     return listofindex, len(listofindex)
 
@@ -129,7 +129,8 @@ def arrange_column(df):
 
 
 def preProcess():
-    output = input('Please insert output file name\nOutput file name: ')
+    output = input(
+        'Please insert output file name (without .xlsx)\nOutput file name: ')
     outputfile = output + '.xlsx'
     return outputfile
 

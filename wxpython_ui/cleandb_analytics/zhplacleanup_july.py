@@ -33,31 +33,26 @@ def getGroup(df):
 
 
 def getDFGroup(df):
-    # function: identify group of data in original zhpla
-    # input: dirty dataframe
-    # output: list containing small group of df
-    # returns list that contains index to use for slicing, and its length
-    start = time.time()
+    starttime = time.time()
     df = reindex_column(df)
 
     listofindex, count = getGroup(df)
     dflist = []
+    gap = 3
     for i in range(count):
-        st = listofindex[i]  # st is the starting index of the group
-
-        if i < count-1:  # if st is not the last element in the list, then we can set the endpoint
-            en = listofindex[i+1]  # endpoint is the next element(id)
-            df_ = df.iloc[st+3:en]  # slice the big df into the specified range
-        else:  # if st is the last element
-            df_ = df.iloc[st+3:]  # no need to set the endpoint
-
+        start = listofindex[i]
+        if i < count-1:
+            end = listofindex[i+1]
+            df_ = df.iloc[start + gap: end]
+        else:
+            df_ = df.iloc[start + gap:]
         df_ = df_.dropna(axis=1, how='all')
         df_ = reindex_row(df_)
         df_ = reindex_column(df_)
         dflist.append(df_)
     print("group of data: {}".format(len(dflist)))
-    end = time.time()
-    print('getDFGroup,', logDuration(start, end))
+    endtime = time.time()
+    print('getDFGroup,', logDuration(starttime, endtime))
     return dflist
 
 
@@ -106,12 +101,9 @@ def addcolumn_possum(df):
 
 def addcolumn_superior(df):
     start = time.time()
-    # df.to_excel('beforesuperior.xlsx', index=None)
-    # print('before superior', df.shape)
     df_staff = df[['Pos ID', 'Staff No', 'Staff Name']].drop_duplicates()
     df_staff.rename(columns={'Pos ID': 'Superior Pos ID',
                              'Staff No': 'Superior ID', 'Staff Name': 'Superior Name'}, inplace=True)
-
     newdf = pd.merge(df, df_staff, on='Superior Pos ID', how='left')
     end = time.time()
     print('added column superior: ', logDuration(start, end))
