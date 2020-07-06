@@ -163,11 +163,8 @@ def arrange_column(df):
 
 def preProcess():
     output = input('Please insert output file name\nOutput file name: ')
-    extension = input(
-        'Select output file type:\n1. Excel (.xlsx)\n2. CSV (.csv)\nAnswer (1 or 2): ')
-    ext = '.xlsx' if extension == '1' else '.csv'
-    outputfile = output.replace(' ', '_') + ext
-    return ext, outputfile
+    outputfile = output.replace(' ', '_') + '.xlsx'
+    return outputfile
 
 
 def mainProcess(zhplapath):
@@ -183,12 +180,9 @@ def mainProcess(zhplapath):
     return df
 
 
-def postProcess(df, ext, outputfile):
+def postProcess(df, outputfile):
     start = time.time()
-    if ext == '.xlsx':
-        df.to_excel(outputfile, index=None)
-    elif ext == '.csv':
-        df.to_csv(outputfile, index=None)
+    df.to_excel(outputfile, index=None)
     os.startfile(outputfile)
     end = time.time()
     print('writing to file, ', logDuration(start, end))
@@ -198,12 +192,12 @@ zhplapath = r'D:\Documents\Python\project-2\database\input\ZHPLA_July2020.xlsx'
 # zhplapath = r'D:\Documents\Python\project-2\database\input\ZHPLA_June2020_raw.xlsx'
 
 try:
-    ext, outputfile = preProcess()
+    outputname = preProcess()
     timeStart = time.time()
     df = mainProcess(zhplapath)
-    postProcess(df, ext, outputfile)
+    postProcess(df, outputname)
 except Exception as e:
-    print('Process failed: ', e)
-
-timeEnd = time.time()
-print('time elapsed: ', logDuration(timeStart, timeEnd))
+    print('Process failed:', e)
+finally:
+    timeEnd = time.time()
+    print('time elapsed:', logDuration(timeStart, timeEnd))
