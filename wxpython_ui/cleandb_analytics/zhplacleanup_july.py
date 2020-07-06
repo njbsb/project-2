@@ -2,7 +2,6 @@ import pandas as pd
 import time
 import os
 import datetime
-from pathlib import Path
 
 
 def logDuration(start, end):
@@ -52,7 +51,6 @@ def getDFGroup(df):
         else:  # if st is the last element
             df_ = df.iloc[st+3:]  # no need to set the endpoint
 
-        # drop any column that contains all nan
         df_ = df_.dropna(axis=1, how='all')
         df_ = reindex_row(df_)
         df_ = reindex_column(df_)
@@ -168,19 +166,20 @@ def preProcess():
     extension = input(
         'Select output file type:\n1. Excel (.xlsx)\n2. CSV (.csv)\nAnswer (1 or 2): ')
     ext = '.xlsx' if extension == '1' else '.csv'
-    # outputfile = Path(output.replace(' ', '_') + ext)
     outputfile = output.replace(' ', '_') + ext
     return ext, outputfile
 
 
-def mainProcess(df):
-    dflist = getDFGroup(df)
+def mainProcess(zhplapath):
+    dfRaw = pd.read_excel(zhplapath, skiprows=4)
+    dflist = getDFGroup(dfRaw)
     cleandf = getCleanDF(dflist)
 
     df = addcolumn_possum(cleandf)
     df = addcolumn_superior(df)
     df = addcolumn_consoJG(df)
     df = arrange_column(df)
+    print('FINAL\n', df)
     return df
 
 
@@ -201,9 +200,7 @@ zhplapath = r'D:\Documents\Python\project-2\database\input\ZHPLA_July2020.xlsx'
 try:
     ext, outputfile = preProcess()
     timeStart = time.time()
-    dfRaw = pd.read_excel(zhplapath, skiprows=4)
-    df = mainProcess(dfRaw)
-    print('FINAL\n', df)
+    df = mainProcess(zhplapath)
     postProcess(df, ext, outputfile)
 except Exception as e:
     print('Process failed: ', e)
