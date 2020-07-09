@@ -175,9 +175,9 @@ def mainProcess(zhplapath, outputname):
 
 
 zhplapath = r'D:\Documents\Python\project-2\database\input\ZHPLA_July2020.xlsx'
+outputname = 'zhpla_clean.xlsx'
 # zhplapath = r'D:\Documents\Python\project-2\database\input\ZHPLA_June2020_raw.xlsx'
 # zhplapath = r'D:\Documents\Python\project-2\database\input\zhplac.xlsx'
 
-outputname = preProcess()
+# outputname = preProcess()
 df = mainProcess(zhplapath, outputname)
-# postProcess(df, outputname)

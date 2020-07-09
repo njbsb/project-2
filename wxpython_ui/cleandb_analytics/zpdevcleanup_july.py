@@ -134,16 +134,6 @@ def arrange_column(df):
                  'Join Dept', 'Join Div.', 'Join Comp.', 'Pos. SKG', 'Home SKG', 'Work Center', 'Task Type', 'Task Type Desc', 'Date of Task']
     df = df.reindex(columns=col_order)
     df = df[df['Personnel Number'].notna()]
-    # df.rename(columns={'Personnel Number': 'Staff Number',
-    #                    'Formatted Name of Employee or Applicant': 'Staff Name',
-    #                    'Gender Key Desc': 'Gender',
-    #                    'Sal. Grade': 'SG',
-    #                    'Job Grade': 'JG',
-    #                    'Date Post': 'Date in Position',
-    #                    'Join Dept': 'Date in Department',
-    #                    'Join Div.': 'Date in Division',
-    #                    'Join Comp.': 'Date in Company',
-    #                    'Join Date': 'Date in PETRONAS'}, inplace=True)
     # df.dropna(subset=['Staff Number'])
 
     end = time.time()
