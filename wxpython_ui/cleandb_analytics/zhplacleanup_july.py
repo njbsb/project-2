@@ -1,5 +1,6 @@
 import pandas as pd
 import time
+import sys
 import os
 import datetime
 
@@ -27,30 +28,28 @@ def getGroup(df):
     # list contain index of new group of data, detects 'zhpla report' from column 0/A
     listofindex = []
     for i, row in df.iterrows():
-        if type(row[0]) == str and row[0][:5] == 'ZHPLA':
+        if type(row[0]) == str and 'ZHPLA' in row[0]:
             listofindex.append(i)
     return listofindex, len(listofindex)
 
 
 def getDFGroup(df):
     starttime = time.time()
-    df = reindex_column(df)
-
     listofindex, count = getGroup(df)
     dflist = []
     gap = 3
+    dropaxis = [1]
     for i in range(count):
         start = listofindex[i]
         if i < count-1:
-            end = listofindex[i+1]
+            end = listofindex[i + 1]
             df_ = df.iloc[start + gap: end]
         else:
             df_ = df.iloc[start + gap:]
-        df_ = df_.dropna(axis=1, how='all')
-        df_ = reindex_row(df_)
-        df_ = reindex_column(df_)
+        for axis in dropaxis:
+            df_ = df_.dropna(how='all', axis=axis)
         dflist.append(df_)
-    print("group of data: {}".format(len(dflist)))
+    print('group =', len(dflist))
     endtime = time.time()
     print('getDFGroup,', logDuration(starttime, endtime))
     return dflist
@@ -58,10 +57,11 @@ def getDFGroup(df):
 
 def getCleanDF(dflist):
     start = time.time()
-    # role: shift the shifted columns
     count = 0
     print("Adjusting columns...")
     for i, df in enumerate(dflist):
+        df = reindex_row(df)
+        df = reindex_column(df)
         for colname, column in df.iteritems():
             if not pd.isna(column[1]):  # if row 1 has value/column name
                 if pd.isna(column[0]):  # if row 0 already has column name
@@ -77,12 +77,13 @@ def getCleanDF(dflist):
                                 if index in (1, 2) or index % 2 == 0:
                                     dfcol[index] = float('nan')
         df = df.dropna(how='all')
-        list_colname = [columnName[0] for i, columnName in df.iteritems()]
-        df = df.drop([0]).reset_index(drop=True)  # drop row of column name
-        count += len(df)
-        df.columns = list_colname
+
+        df.columns = df.iloc[0]
+        df = df[1:]
         dflist[i] = df
+        count += len(df)
     cleandf = pd.concat(dflist).reset_index(drop=True)
+    print('\ncount =', count)
     end = time.time()
     print('dataframe cleaned, ', logDuration(start, end))
     return cleandf
@@ -155,12 +156,12 @@ def arrange_column(df):
 
 def preProcess():
     output = input('Please insert output file name\nOutput file name: ')
-    outputfile = output.replace(' ', '_') + '.xlsx'
+    outputfile = output + '.xlsx'
     return outputfile
 
 
-def mainProcess(zhplapath):
-    dfRaw = pd.read_excel(zhplapath, skiprows=4)
+def mainProcess(zhplapath, outputname):
+    dfRaw = pd.read_excel(zhplapath)
     dflist = getDFGroup(dfRaw)
     cleandf = getCleanDF(dflist)
 
@@ -169,27 +170,14 @@ def mainProcess(zhplapath):
     df = addcolumn_consoJG(df)
     df = arrange_column(df)
     print('FINAL\n', df)
+    df.to_excel(outputname, index=None)
     return df
-
-
-def postProcess(df, outputfile):
-    start = time.time()
-    df.to_excel(outputfile, index=None)
-    os.startfile(outputfile)
-    end = time.time()
-    print('writing to file, ', logDuration(start, end))
 
 
 zhplapath = r'D:\Documents\Python\project-2\database\input\ZHPLA_July2020.xlsx'
 # zhplapath = r'D:\Documents\Python\project-2\database\input\ZHPLA_June2020_raw.xlsx'
+# zhplapath = r'D:\Documents\Python\project-2\database\input\zhplac.xlsx'
 
-try:
-    outputname = preProcess()
-    timeStart = time.time()
-    df = mainProcess(zhplapath)
-    postProcess(df, outputname)
-except Exception as e:
-    print('Process failed:', e)
-finally:
-    timeEnd = time.time()
-    print('time elapsed:', logDuration(timeStart, timeEnd))
+outputname = preProcess()
+df = mainProcess(zhplapath, outputname)
+# postProcess(df, outputname)
