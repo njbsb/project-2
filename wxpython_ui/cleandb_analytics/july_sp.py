@@ -47,75 +47,53 @@ def split_eachline(dflines):
     return dflines
 
 
-def page_3in1(eachsheet, typ):
-    print('Case: (1+2+3)')
+def separate_pages(eachsheet, typ, case):
+    case_name = ['Case: (1+2+3)',
+                 'Case: (1+2, 3)',
+                 'Case: (1, 2+3)',
+                 'Case: (1,2,3)']
+    print(case_name[case])
+    pagelist = []
     eachpagelist = []
     for i, column in enumerate(eachsheet):
         for eachslicedcolumn in column:
             if typ == 'profile':
                 eachslicedcolumn.insert(0, str(i+1))
             eachpagelist.append(eachslicedcolumn)
-    pagelist = [eachpagelist]
-    return pagelist
-
-
-def page_separate1(eachsheet, typ):
-    print('Case: (1, 2+3)')
-    pagelist = []  # will contain 2 elements/pages
-    eachpagelist = []
-    for i, column in enumerate(eachsheet):
-        for eachslicedcolumn in column:
-            if typ == 'profile':
-                eachslicedcolumn.insert(0, str(i + 1))
-            eachpagelist.append(eachslicedcolumn)
-        if i in [0, 2]:
+        if case in [1, 2]:
+            if case == 1:
+                saveatIndex = [1, 2]
+            elif case == 2:
+                saveatIndex = [0, 2]
+            if i in saveatIndex:
+                pagelist.append(eachpagelist)
+                eachpagelist = []
+        if case == 3:
             pagelist.append(eachpagelist)
             eachpagelist = []
+    if case == 0:
+        pagelist = [eachpagelist]
     return pagelist
 
 
-def page_separate3(eachsheet, typ):
-    print('Case: (1+2, 3)')
-    pagelist = []
-    eachpagelist = []
-    for i, column in enumerate(eachsheet):
-        for eachslicedcolumn in column:
-            if typ == 'profile':
-                eachslicedcolumn.insert(0, str(i + 1))
-            eachpagelist.append(eachslicedcolumn)
-        if i in [1, 2]:
-            pagelist.append(eachpagelist)
-            eachpagelist = []
-    return pagelist
-
-
-def page_separate123(eachsheet, typ):
-    print('Case: (1,2,3)')
-    pagelist = []
-    for i, column in enumerate(eachsheet):
-        eachpagelist = []
-        for eachslicedcolumn in column:
-            if typ == 'profile':
-                eachslicedcolumn.insert(0, str(i+1))
-            eachpagelist.append(eachslicedcolumn)
-        pagelist.append(eachpagelist)
-    return pagelist
-
-
-def divide_pages(eachsheet, idx_max, typ):
+def divide_pages(eachsheet, typ):
     # print('\neach sheet', eachsheet)
     li1, li2, li3 = eachsheet
     pagelist = []
     if len(li1) + len(li2) <= 4:
         if len(li1) + len(li2) + len(li3) <= 4:
-            pagelist = page_3in1(eachsheet, typ)
+            # CASE 0
+            pagelist = separate_pages(eachsheet, typ, 0)
         else:
-            pagelist = page_separate3(eachsheet, typ)
+            # CASE 1
+            pagelist = separate_pages(eachsheet, typ, 1)
     else:
         if len(li2) + len(li3) <= 4:
-            pagelist = page_separate1(eachsheet, typ)
+            # CASE 2
+            pagelist = separate_pages(eachsheet, typ, 2)
         else:
-            pagelist = page_separate123(eachsheet, typ)
+            # CASE 4
+            pagelist = separate_pages(eachsheet, typ, 3)
     return pagelist
 
 
@@ -249,8 +227,6 @@ def get_dataframeList(filepath, sheetname_list):
 def add_slide_sp(id_list, data_list, presentation, sheetname_list, mediafolder):
     for i, (id_df, profile_df) in enumerate(zip(id_list, data_list)):
         print('\nSP', i+1)
-        columnlength = profile_df.count().reset_index(drop=True)
-        idx_max = int(columnlength.idxmax())
 
         sheet_dict = {'id': id_df, 'profile': profile_df}
         for key, df_value in sheet_dict.items():
@@ -259,7 +235,7 @@ def add_slide_sp(id_list, data_list, presentation, sheetname_list, mediafolder):
                 for colname, column in df_value.iteritems()]
             # print('\n', key, 'raw list', value_list)
             value_splitted = split_eachline(value_list)
-            value_pagelist = divide_pages(value_splitted, idx_max, key)
+            value_pagelist = divide_pages(value_splitted, key)
             # print('by pages', key, ':', value_pagelist)
             sheet_dict[key] = value_pagelist
 
