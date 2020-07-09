@@ -227,8 +227,8 @@ def get_dataframeList(filepath, sheetname_list):
 def add_slide_sp(id_list, data_list, presentation, sheetname_list, mediafolder):
     for i, (id_df, profile_df) in enumerate(zip(id_list, data_list)):
         print('\nSP', i+1)
-
         sheet_dict = {'id': id_df, 'profile': profile_df}
+
         for key, df_value in sheet_dict.items():
             value_list = [df_value.loc[:, colname].dropna(
                 how='all').tolist()
