@@ -6,6 +6,10 @@ import sys
 import datetime
 from dateutil.relativedelta import relativedelta
 
+mydate = datetime.datetime.now()
+current_month = mydate.strftime("%B_%Y")
+print(current_month)
+
 
 def reindex_column(df):
     colname = list(df.columns)
@@ -23,7 +27,6 @@ def reindex_row(df):
 
 def calculate_durationYM(date):
     if not pd.isnull(date):
-        # print(date, date.date())
         dip = date.date()
         rdelta = relativedelta(datetime.date.today(), dip)
         dateYM = str(rdelta.years) + "y" + str(rdelta.months) + "m"
@@ -33,7 +36,8 @@ def calculate_durationYM(date):
 
 
 def calculate_age(born):
-    born = datetime.datetime.strptime(born, "%d.%m.%Y").date()
+    # born = datetime.datetime.strptime(born, "%d.%m.%Y").date()
+    born = born.date()
     today = datetime.date.today()
     return today.year - born.year - ((today.month, today.day) < (born.month, born.day))
 
@@ -63,9 +67,8 @@ def getGroup(df, keyword):
 
 def getDFGroup(df, keyword):
     gap = 3 if keyword == 'ZHPLA' else 5
-    dropaxis = [0, 1]
-
-    starttime = time.time()
+    dftype = 'ZHPLA' if keyword == 'ZHPLA' else 'ZPDEV'
+    # starttime = time.time()
     listofindex, count = getGroup(df, keyword)
     dflist = []
 
@@ -76,20 +79,17 @@ def getDFGroup(df, keyword):
             df_ = df.iloc[start + gap: end]
         else:
             df_ = df.iloc[start + gap:]
-        for axis in dropaxis:
+        for axis in [0, 1]:
             df_ = df_.dropna(how='all', axis=axis)
         dflist.append(df_)
-    print('group =', len(dflist))
-    endtime = time.time()
-    print('getDFGroup,', logDuration(starttime, endtime))
+
+    print('\nNew Dataframe: {}\ngroup:'.format(dftype), len(dflist))
+    # print('getDFGroup,', logDuration(starttime, time.time()))
     return dflist
 
 
 def getCleanDF(dflist, keyword):
-    # start = time.time()
     count = 0
-    print("Adjusting columns...")
-
     for i, df in enumerate(dflist):
         df = reindex_row(df)
 
@@ -116,10 +116,27 @@ def getCleanDF(dflist, keyword):
         dflist[i] = df
         count += len(df)
     cleandf = pd.concat(dflist).reset_index(drop=True)
-    print('\ncount =', count)
-    # end = time.time()
-    # print('dataframe cleaned, ', logDuration(start, time.time()))
+    print('total row count:', count)
     return cleandf
+
+
+def correctFormat(df, keyword):
+    if keyword == 'ZHPLA':
+        colname_date = ['End Date', 'Vac Date', 'Start Date']
+        df['Email Address'] = df['Email Address'].str.lower()
+        # df['Position'] = df['Position'].str.replace(';', ',')
+        df = df.replace(';', ',', regex=True)
+    else:
+        colname_date = ['Date of Birth', 'Join Dept', 'SG Since', 'Date Post',
+                        'Join Div.', 'Join Comp.', 'Join Date', 'Date of Task']
+
+        colsemicolon = ['Position', 'Section', 'Sector',
+                        'Department', 'Division', 'Work Center']
+        df[colsemicolon] = df[colsemicolon].replace(';', ',', regex=True)
+
+    df[colname_date] = df[colname_date].apply(
+        pd.to_datetime, format='%d.%m.%Y', errors='coerce')
+    return df
 
 
 def addcolumn_possum(df):
@@ -128,8 +145,7 @@ def addcolumn_possum(df):
                      'Division', 'Sector', 'Comp. Position', 'Business']
     df['Pos SUM'] = df[possum_column].apply(
         lambda x: ', '.join(x.dropna().astype(str)), axis=1)
-    end = time.time()
-    print('added pos SUM, ', logDuration(start, end))
+    print('added column POSSUM, ', logDuration(start, time.time()))
     return df
 
 
@@ -207,9 +223,12 @@ def addcolumn_SGym(df):
 
 def addcolumn_age(df):
     try:
-        df['Date of Birth'] = df['Date of Birth'].apply(date_integrity)
+        df['Date of Birth'] = df['Date of Birth'].apply(
+            date_integrity)  # return nan if not match date type
+
         df['Age'] = df['Date of Birth'].apply(
             lambda x: calculate_age(x) if not pd.isna(x) else x)
+
     except Exception as e:
         print('Process failed:', e)
         exc_type, exc_obj, exc_tb = sys.exc_info()
@@ -221,20 +240,11 @@ def addcolumn_age(df):
 
 def addcolumn_yearIn(df):
     try:
-        starttime = time.time()
         dateIn = ['Date Post', 'Join Date']
         yearIn = ['YiPosition', 'YiPETRONAS']
-        df_dateIn = df[dateIn]
         for date, yearmonth in zip(dateIn, yearIn):
-            # df_dateIn[date] = df_dateIn[date].apply(date_integrity)
-            df_dateIn[date] = pd.to_datetime(
-                df_dateIn[date], format="%d.%m.%Y", errors='coerce')
-            df_dateIn[yearmonth] = df_dateIn[date].apply(
+            df[yearmonth] = df[date].apply(
                 lambda x: calculate_durationYM(x))
-            df[yearmonth] = df_dateIn[yearmonth]
-        # print(df_dateIn)
-        endtime = time.time()
-        print('yearIn,', logDuration(starttime, endtime))
     except Exception as e:
         print(e)
     finally:
@@ -242,42 +252,24 @@ def addcolumn_yearIn(df):
 
 
 def arrange_column(df, keyword):
-    start = time.time()
     if keyword == 'ZHPLA':
-        col_order = ['Staff No', 'Staff Name', 'SG', 'Lvl', 'Tier', 'JG', 'Est.JG', 'EQV JG',
-                     'Conso JG', 'OLIVE JG', 'Pos ID', 'Pos SUM', 'Superior Pos ID', 'Superior ID', 'Superior Name',
-                     'Position', 'Sec ID', 'Section', 'Dept ID', 'Department', 'Division ID', 'Division', 'Sector ID',
-                     'Sector', 'Comp. ID Position', 'Comp. Position', 'Buss ID', 'Business', 'C.Center', 'Gender', 'Race',
-                     'Zone', 'Home SKG', 'Pos.SKG', 'JobID(C)', 'Level', 'NE Area', 'Loc ID', 'Location Text', 'Vac Date',
-                     'Start Date', 'End Date', 'Vacancy Status', 'Email Address', 'Mirror Pos ID', 'Mirror Position', 'EG Post. ID',
-                     'EG Position', 'ESG Post. ID', 'ESG Position', 'PT1', 'PT2', 'Overseas Staff No', 'Overseas Staff Name', 'Overseas Staff Comp. ID',
-                     'Overseas Staff Comp.', 'Staff Comp. ID', 'Staff Comp.', 'Staff EG ID', 'Staff EG', 'Staff ESG ID', 'Staff ESG', 'Staff Work Contract ID', 'Staff Work Contract'
+        col_order = ['Staff No', 'Staff Name', 'SG', 'Lvl', 'Tier', 'JG', 'Est.JG', 'EQV JG', 'Conso JG', 'OLIVE JG',
+                     'Pos ID', 'Pos SUM', 'Superior Pos ID', 'Superior ID', 'Superior Name', 'Position', 'Sec ID',
+                     'Section', 'Dept ID', 'Department', 'Division ID', 'Division', 'Sector ID', 'Sector', 'Comp. ID Position',
+                     'Comp. Position', 'Buss ID', 'Business', 'C.Center', 'Gender', 'Race', 'Zone', 'Home SKG', 'Pos.SKG', 'JobID(C)',
+                     'Level', 'NE Area', 'Loc ID', 'Location Text', 'Vac Date', 'Start Date', 'End Date', 'Vacancy Status',
+                     'Email Address', 'Mirror Pos ID', 'Mirror Position', 'EG Post. ID', 'EG Position', 'ESG Post. ID', 'ESG Position',
+                     'PT1', 'PT2', 'Overseas Staff No', 'Overseas Staff Name', 'Overseas Staff Comp. ID', 'Overseas Staff Comp.',
+                     'Staff Comp. ID', 'Staff Comp.', 'Staff EG ID', 'Staff EG', 'Staff ESG ID', 'Staff ESG', 'Staff Work Contract ID', 'Staff Work Contract'
                      ]
-        colname_date = ['End Date', 'Vac Date', 'Start Date']
-        for colname in colname_date:
-            df[colname] = df[colname].str.replace('.', '/', regex=False)
-        df['Email Address'] = df['Email Address'].str.lower()
-        df = df.reindex(columns=col_order)
-    else:
-        # arrange zpdev here
-        colname_date = ['Date of Birth', 'Join Dept',
-                        'SG Since', 'Date Post', 'Join Div.', 'Join Comp.', 'Join Date', 'Date of Task']
-        for colname in colname_date:
-            df[colname] = df[colname].str.replace('.', '/', regex=False)
-        colsemicolon = ['Position', 'Section', 'Sector',
-                        'Department', 'Division', 'Work Center']
-        for colname in colsemicolon:
-            df[colname] = df[colname].str.replace(';', ',', regex=False)
-
+    else:  # ZPDEV
         col_order = ['Personnel Number', 'Formatted Name of Employee or Applicant', 'Gender Key Desc', 'Age', 'Sal. Grade', 'Lvl',
                      'Job Grade', 'PPA-19', 'PPA-18', 'PPA-17', 'PPA-16', 'PPA-15', 'PPA', 'Date of Birth', 'Country of Birth',
-                     'Country of Birth Desc', 'State', 'State Desc', 'Birthplace', 'Nationality', 'Nationality Desc', 'Position',
-                     'Section', 'Department', 'Division', 'Sector', 'Company', 'SG Since', 'SG (YM)', 'Join Date', 'YiPETRONAS', 'Date Post', 'YiPosition',
+                     'Country of Birth Desc', 'State', 'State Desc', 'Birthplace', 'Nationality', 'Nationality Desc', 'Position', 'Section',
+                     'Department', 'Division', 'Sector', 'Company', 'SG Since', 'SG (YM)', 'Join Date', 'YiPETRONAS', 'Date Post', 'YiPosition',
                      'Join Dept', 'Join Div.', 'Join Comp.', 'Pos. SKG', 'Home SKG', 'Work Center', 'Task Type', 'Task Type Desc', 'Date of Task']
-        df = df.reindex(columns=col_order)
         df = df[df['Personnel Number'].notna()]
-
-    print('arranged columns, ', logDuration(start, time.time()))
+    df = df.reindex(columns=col_order)
     return df
 
 
@@ -350,6 +342,8 @@ def process_zhpla(zhplapath):
     dflist = getDFGroup(dfRaw, keyword)
     df = getCleanDF(dflist, keyword)
 
+    df = correctFormat(df, keyword)
+
     df = addcolumn_possum(df)
     df = addcolumn_superior(df)
     df = addcolumn_consoJG(df)
@@ -370,15 +364,20 @@ def process_zpdev(zpdevpath, zpdev_retirepath):
         dflist[i] = cleandf
 
     df_main, df_retire = dflist
-    combined_zpdev = pd.merge(df_main, df_retire[[
-        'Personnel Number', 'Task Type', 'Task Type Desc', 'Date of Task']], on='Personnel Number', how='left')
-    combined_zpdev = addcolumn_ppa5yrs(combined_zpdev)
-    combined_zpdev = addcolumn_SGym(combined_zpdev)
-    combined_zpdev = addcolumn_age(combined_zpdev)
-    combined_zpdev = addcolumn_yearIn(combined_zpdev)
-    combined_zpdev = arrange_column(combined_zpdev, keyword)
+    df_merge = pd.merge(df_main, df_retire[[
+        'Personnel Number', 'Task Type', 'Task Type Desc', 'Date of Task']],
+        on='Personnel Number', how='left')
 
-    return combined_zpdev
+    # split this first before apply datetime to column date
+    df_merge = addcolumn_SGym(df_merge)
+    df_merge = correctFormat(df_merge, keyword)
+
+    df_merge = addcolumn_ppa5yrs(df_merge)
+    df_merge = addcolumn_age(df_merge)
+    df_merge = addcolumn_yearIn(df_merge)
+    df_merge = arrange_column(df_merge, keyword)
+
+    return df_merge
 
 
 def cleanOnly(data_dict):
@@ -440,10 +439,8 @@ def mainProcess(data_dictionary, operation_type):
 
         if int(operation_type) == 3:
             df_dictionary = cleanOnly(data_dictionary)
-            # print('cleanonly\n', z_df_dictionary)
             df_analytics = combineOnly(df_dictionary)
-            # df_dictionary = {**df_dictionary, **z_df_dictionary}
-            
+
         df_dictionary['analytics'] = df_analytics
     print('Process completed: ', logDuration(starttime, time.time()))
     return df_dictionary
@@ -468,6 +465,8 @@ def preProcess(zhplapath, zpdevpath, zpdev_retirepath):
                          'zpdevretire': zpdev_retirepath}
 
     if operation == '2':
+        zhplapath = r'D:\Documents\Python\project-2\database\input\July\cleanzhpla_july.xlsx'
+        zpdevpath = r'D:\Documents\Python\project-2\database\input\July\cleanzpdev_july.xlsx'
         data_dict = {'zhpla': zhplapath, 'zpdev': zpdevpath}
 
     if operation == '3':
@@ -481,9 +480,6 @@ zhplapath = r'D:\Documents\Python\project-2\database\input\July\ZHPLA_July2020.x
 zpdev_mainpath = r'D:\Documents\Python\project-2\database\input\July\ZPDEV_July_2020.xlsx'
 zpdev_retirepath = r'D:\Documents\Python\project-2\database\input\July\Retirement_july2020.xlsx'
 
-# zhplapath = r'D:\Documents\Python\project-2\zhpla_july.xlsx'
-# zpdev_mainpath = r'D:\Documents\Python\project-2\combined_zpdevjuly.xlsx'
-
 
 data_dictionary, operation = preProcess(
     zhplapath, zpdev_mainpath, zpdev_retirepath)
@@ -492,3 +488,6 @@ df_dictionary = mainProcess(data_dictionary, operation)
 print(len(df_dictionary))
 for key, value in df_dictionary.items():
     print(key, '\n', value)
+    outputfile = (key + current_month).upper() + '.xlsx'
+    value.to_excel(outputfile, index=None)
+    os.startfile(outputfile)
