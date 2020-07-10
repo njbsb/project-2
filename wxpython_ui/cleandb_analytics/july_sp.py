@@ -77,23 +77,19 @@ def separate_pages(eachsheet, typ, case):
 
 
 def divide_pages(eachsheet, typ):
-    # print('\neach sheet', eachsheet)
     li1, li2, li3 = eachsheet
     pagelist = []
     if len(li1) + len(li2) <= 4:
         if len(li1) + len(li2) + len(li3) <= 4:
-            # CASE 0
-            pagelist = separate_pages(eachsheet, typ, 0)
+            case = 0
         else:
-            # CASE 1
-            pagelist = separate_pages(eachsheet, typ, 1)
+            case = 1
     else:
         if len(li2) + len(li3) <= 4:
-            # CASE 2
-            pagelist = separate_pages(eachsheet, typ, 2)
+            case = 2
         else:
-            # CASE 4
-            pagelist = separate_pages(eachsheet, typ, 3)
+            case = 3
+    pagelist = separate_pages(eachsheet, typ, case)
     return pagelist
 
 
