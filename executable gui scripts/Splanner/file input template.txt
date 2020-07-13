@@ -1,0 +1,25 @@
+1. ZHPLA & ZPDEV INPUT FORMAT
+1.1 ZHPLA AS IT IS
+1.2 ZPDEV MAIN
+1.3 ZPDEV RETIRE (MUST INCLUDE PERSONNEL NUMBER AS ID)
+
+_________________________________________________________________________________________
+
+2. SUCCESSION PLANNING INPUT FORMAT:
+#############################################################################
+    A           |B          |C          |D          |E          |F          | columns
+#############################################################################
+1   |1st Line   |2nd Line	|3rd Line	|1st Line	|2nd Line	|3rd Line	|
+2   |_________________________________________________________________________
+3   |id1        |id1		|id1		|name1		|name2		|name3		|
+4   |id2        |id2		|id2		|name1		|name2		|name3		|
+5   |id3		|id3		|id3		|name2		|name2		|name3      |
+
+_________________________________________________________________________
+
+3. REPORTER
+
+input file according to the file type available
+
+4. TALENTDOCS
+
