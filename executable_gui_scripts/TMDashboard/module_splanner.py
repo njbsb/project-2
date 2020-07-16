@@ -290,7 +290,7 @@ def mainProcess(sp_path, mediafolder, mainpath):
                                 sheetname_list, mediafolder, mainpath)
     presentation.save(outputfile)
     print('\nDONE')
-    return presentation, outputname
+    return presentation, outputfile
 
 
 # sp_path = r'D:\Documents\Python\project-2\database\input\July\new_sp_input_test.xlsx'
