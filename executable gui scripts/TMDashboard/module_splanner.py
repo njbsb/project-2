@@ -11,40 +11,57 @@ import requests
 import urllib.request
 
 
-def splitBelow9Rows(column, columnlength):
+def splitBelow9Rows(column):
+    columnlength = len(column)
     breakindex = math.ceil(columnlength/2)
-    df_a = column[:breakindex]
-    df_b = column[breakindex:]
-    return df_a, df_b
+
+    partition_a = column[:breakindex]
+    partition_b = column[breakindex:]
+
+    returnlist = [partition_a, partition_b]
+    return returnlist
 
 
-def splitBelow15Rows(column, columnlength):
+def splitBelow15Rows(column):
+    columnlength = len(column)
     breakindex = math.ceil(columnlength/3)
-    df_a = column[:breakindex]
-    df_a2 = column[breakindex:]
-    df_b, df_c = splitBelow9Rows(df_a2, len(df_a2))
-    return df_a, df_b, df_c
+
+    partition_a = column[:breakindex]
+    partition_aleft = column[breakindex:]
+
+    returnlist = [partition_a]
+    aleft_list = splitBelow9Rows(partition_aleft)
+    returnlist.extend(aleft_list)
+    return returnlist
 
 
-def split_eachline(dflines):
-    for i, dfline in enumerate(dflines):
-        linelen = len(dfline)
+def splitBelow20Rows(column):
+    columnlength = len(column)
+    breakindex = math.ceil(columnlength/4)
+
+    partition_a = column[:breakindex]
+    partition_aleft = column[breakindex:]
+
+    returnlist = [partition_a]
+    aleft_list = splitBelow15Rows(partition_aleft)
+
+    returnlist.extend(aleft_list)
+    return returnlist
+
+
+def split_eachline(columnlist):
+    for i, eachcolumn in enumerate(columnlist):
+        linelen = len(eachcolumn)
         if linelen > 5:
             if linelen <= 9:
-                df_a, df_b = splitBelow9Rows(dfline, linelen)
-                splitlist = [df_a, df_b]
-                dflines[i] = splitlist
+                columnlist[i] = splitBelow9Rows(eachcolumn)
             elif linelen <= 15:
-                df_a, df_b, df_c = splitBelow15Rows(dfline, linelen)
-                splitlist = [df_a, df_b, df_c]
-                dflines[i] = splitlist
-            else:
-                dfpage1 = dfline.iloc[:15]
-                dfpage1 = dfline.iloc[15:]
-                # cont later
+                columnlist[i] = splitBelow15Rows(eachcolumn)
+            elif linelen <= 20:
+                columnlist[i] = splitBelow20Rows(eachcolumn)
         else:
-            dflines[i] = [dfline]
-    return dflines
+            columnlist[i] = [eachcolumn]
+    return columnlist
 
 
 def separate_pages(eachsheet, typ, case):
