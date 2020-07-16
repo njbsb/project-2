@@ -482,6 +482,7 @@ class splannerFrame (wx.Frame):
                 self.txt_message.SetLabelText('Running process...')
                 presentation, outputfile = sp.mainProcess(
                     sp_path, mediafolder, thispath)
+                print(outputfile)
                 if self.chbox_autoopen.GetValue():
                     os.startfile(outputfile)
                 messageString = 'SP successfully generated.'

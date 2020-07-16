@@ -263,10 +263,14 @@ def add_image(shape, idlist, mediafolderpath, mainpath):
                 imglink = 'https://talentengine.petronas.com/api/resources/staff/' + \
                     str(staffid) + '/picture'
                 response = requests.get(imglink)
-                if response.status_code == 200:  # if link exist
-                    urllib.request.urlretrieve(imglink, imgfilepath)
-                    print('downloading', staffid)
-                else:
+                try:
+                    if response.status_code == 200:  # if link exist
+                        urllib.request.urlretrieve(imglink, imgfilepath)
+                        print('downloading', staffid)
+                    else:
+                        imgfilepath = ''
+                except Exception as e:
+                    print('Error while downloading,', str(e))
                     imgfilepath = ''
             if not imgfilepath == '':
                 shape.add_picture(imgfilepath, Inches(i + 0.25), Inches(
@@ -276,6 +280,7 @@ def add_image(shape, idlist, mediafolderpath, mainpath):
 def mainProcess(sp_path, mediafolder, mainpath):
     outputname = 'succession_planning.pptx'
     outputfile = os.path.join(mainpath, outputname)
+    print('sp module output', outputfile)
     filename, sheetname_list = getFileInfo(sp_path)
     id_list, profile_list = get_dataframeList(sp_path, sheetname_list)
     presentation = Presentation()
