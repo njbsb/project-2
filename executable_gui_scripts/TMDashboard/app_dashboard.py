@@ -361,7 +361,7 @@ class analyticsFrame (wx.Frame):
         if 'zpdev' in df_dictionary:
             self.btn_openzpdev.Enable()
         if 'analytics' in df_dictionary:
-            self.btn_openta.Enable()
+            self.btn_openanalytics.Enable()
 
     def openFolder(self, event):
         os.startfile(thispath)
